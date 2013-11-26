@@ -20,7 +20,7 @@ a, input     { outline: none; }
 p            { padding: 10px 0; }
 img          { border: none; }
 .titlebar a:link, .titlebar a:visited, .titlebar a:hover { color: #FFF !important; }
-.titlebar                 { background-color: #000; color: #FFF; padding: 0 0 0 14px; height: 75px; clear: both; min-width: 831px; }
+.titlebar                 { background-color: #9a9a9a; color: #FFF; padding: 0 0 0 14px; height: 75px; clear: both; min-width: 831px; }
 .prod .titlebar,
 .prod .titlebar .search,
 .prod .titlebar .ticket,
@@ -29,7 +29,7 @@ img          { border: none; }
 .titlebar .header span      { font-size: 42px; font-weight: 400; font-family: helvetica, verdana, arial, sans-serif; margin-right: 16px; line-height: 70px; }
 .titlebar .mainHeader       { font-size: 18px; font-weight: 400; font-family: helvetica, verdana, arial, sans-serif;
                               height: 40px; width: 122px; text-indent: -9999px; float: left; padding: 28px 28px 0 6px;
-                              background: url(../images/asgard-title-red.png) transparent no-repeat 7px 15px; }
+                              background: url(../images/hotg-logo.png) transparent no-repeat 7px 15px; }
 .prod .titlebar .mainHeader { background-image: url(../images/asgard-title-black.png); }
 .titlebar img.logo          { float: left; margin-right: 14px; margin-top: 8px; height: 58px; width: 58px; }
 .titlebar .header           { float: left; height: 75px; }
@@ -41,7 +41,7 @@ img          { border: none; }
 
 .titlebar .region,
 .titlebar .search,
-.titlebar .ticket             { padding: 3px 7px 0 8px; background-color: #000; border-radius: 8px; -moz-border-radius: 8px; -webkit-border-radius: 8px; }
+.titlebar .ticket             { padding: 3px 7px 0 8px; background-color: ##9a9a9a; border-radius: 8px; -moz-border-radius: 8px; -webkit-border-radius: 8px; }
 .titlebar .ticket             { float: right; }
 .titlebar .search input       { width: 160px; }
 .titlebar .search input:focus { width: 200px; }

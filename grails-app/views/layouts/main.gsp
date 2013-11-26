@@ -47,7 +47,7 @@
   </div>
   <div class="titlebar">
     <div class="header">
-      <a href="${resource(dir: '/')}">
+      <a href="http://www.youtube.com/watch?v=ApxnAr6pRt0" target="_blank">
         <img id="occasionIcon" class="logo" title="${occasion.message}" src="${resource(dir: 'images/occasion', file: occasion?.iconFileName)}"/>
         <div class="mainHeader">Asgard</div>
       </a>
@@ -134,6 +134,7 @@
      <li class="menuButton">
        <g:link class="simpleDb" controller="domain" action="list">SDB</g:link>
      </li>
+ 
      <li class="menuButton"><g:link class="topic" controller="topic" action="list">SNS</g:link></li>
      <li class="menuButton"><g:link class="queue" controller="queue" action="list">SQS</g:link></li>
      <li class="menuButton">
@@ -144,6 +145,7 @@
          <li class="menuButton"><g:link class="dbSnapshot" controller="dbSnapshot" action="list">DB Snapshots</g:link></li>
        </ul>
      </li>
+
      <li class="menuButton"><g:link class="tasks" controller="task" action="list">Task</g:link></li>
    </ul>
   </g:if>
