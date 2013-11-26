@@ -29,7 +29,8 @@ class ApiTokenRealmSpec extends Specification {
     ApiToken apiToken
     ApiTokenService apiTokenService = Mock(ApiTokenService)
     ApplicationContext applicationContext = Mock(ApplicationContext)
-    ApiTokenRealm realm = new ApiTokenRealm(applicationContext: applicationContext)
+	def realm;
+    //ApiTokenRealm realm = new ApiTokenRealm(applicationContext: applicationContext)
 
     def setup() {
         Subject subject = Mock(Subject)
