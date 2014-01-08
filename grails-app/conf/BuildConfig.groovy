@@ -50,9 +50,10 @@ grails.project.dependency.resolution = {
     repositories {
         grailsPlugins()
         grailsHome()
-        grailsCentral()
         mavenCentral()
         mavenRepo "http://dl.bintray.com/spinnaker/spinnaker"
+        grailsCentral()
+	//mavenRepo "https://oss.sonatype.org/content/repositories/openid4java-snapshots"
 
         // Optional custom repository for dependencies.
         Closure internalRepo = {
@@ -92,6 +93,8 @@ grails.project.dependency.resolution = {
         }
 
         compile(
+				'org.openid4java:openid4java:0.9.8',
+			
                 // Amazon Web Services programmatic interface. Transitive dependency of glisten, but also used directly.
                 'com.amazonaws:aws-java-sdk:1.7.5',
 
@@ -168,6 +171,9 @@ grails.project.dependency.resolution = {
         compile ":context-param:1.0"
         compile ':shiro:1.1.4'
         compile ":standalone:1.1.1"
+
+        compile ":resources:1.2-RC1"
+		compile ":jquery:1.8.0"
 
         runtime ":cors:1.0.4"
 
