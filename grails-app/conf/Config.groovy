@@ -17,7 +17,7 @@
 import com.netflix.asgard.model.HardwareProfile
 import com.netflix.asgard.model.InstanceTypeData
 import org.apache.log4j.DailyRollingFileAppender
-
+import org.apache.log4j.Level
 
 // http://grails.org/doc/latest/guide/3.%20Configuration.html#3.1.2 Logging
 log4j = {
@@ -34,12 +34,20 @@ log4j = {
 
         rollingFile name: "stacktrace", maxFileSize: 1024,
                 file: "${logDirectory}/stacktrace.log"
+				
+		rollingFile name: "taskLog",
+				file: "${logDirectory}/tasklog.log",
+				immediateFlush:'true', 
+				threshold:org.apache.log4j.Level.INFO
     }
 
     root {
         info 'asgardrolling'
     }
 
+	// Log task output to a separate file for auditing.
+	info taskLog:"com.netflix.asgard.Task"
+	
     // Set level for all application artifacts
     info 'grails.app'
 
