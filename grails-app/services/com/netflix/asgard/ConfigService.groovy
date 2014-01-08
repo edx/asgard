@@ -729,4 +729,12 @@ class ConfigService {
     String getFastPropertiesConsoleUrl() {
         grailsApplication.config.platform?.fastPropertyConsoleUrls?."${accountName}" ?: ""
     }
+	
+	/**
+	 * @return a list of users associated with the google apps domains who are white-listed for admin privileges
+	 */
+	List<String> getAdministrators() {
+		grailsApplication.config.auth?.administrators ?: []
+	}
+	
 }
