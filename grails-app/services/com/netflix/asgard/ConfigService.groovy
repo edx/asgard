@@ -857,4 +857,11 @@ class ConfigService {
     String getAsgAnalyzerBaseUrl() {
         grailsApplication.config.cloud?.asgAnalyzerBaseUrl ?: ''
     }
+	
+    /**
+    * @return a list of users associated with the google apps domains who are white-listed for admin privileges
+    */
+    List<String> getAdministrators() {
+        grailsApplication.config.auth?.administrators ?: []
+    }
 }

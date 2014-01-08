@@ -49,17 +49,17 @@ import org.openid4java.discovery.UrlIdentifier;
 class GoogleAppsOpenIdAuthenticationProvider implements AuthenticationProvider {
 
 	static final String verificationURLTemplate="https://www.google.com/accounts/o8/user-xrds?uri="
-	
+
 	@Autowired
 	ConfigService configService
-	
+
 	static ConsumerManager consumerManager = null
-	
+
 	static ConsumerManager getManager() {
 		if (! consumerManager)
 			consumerManager = new ConsumerManager()
-			consumerManager.setDiscovery(new Discovery() {
-			/**
+		consumerManager.setDiscovery(new Discovery() {
+					/**
 			 * See http://www.slideshare.net/timdream/google-apps-account-as-openid for more details
 			 * why this is needed. Basically, once Google reports back that the user is actually http://mycorp.com/openid?id=12345,
 			 * the consumer still needs to try to resolve this ID to make sure that Google didn't return a bogus address
@@ -69,32 +69,32 @@ class GoogleAppsOpenIdAuthenticationProvider implements AuthenticationProvider {
 			 * The actual resource is in https://www.google.com/accounts/o8/user-xrds?uri=http://mycorp.com/openid?id=12345
 			 * so does Yadris lookup on that URL and pretend as if that came from http://mycorp.com/openid?id=12345
 			 */
-			@Override
-			public List discover(Identifier id) throws DiscoveryException {
-				if (id.getIdentifier().startsWith("http://edx.org/") && id instanceof UrlIdentifier) {
-					String source = "https://www.google.com/accounts/o8/user-xrds?uri=" + id.getIdentifier();
-					List<DiscoveryInformation> r = super.discover(new UrlIdentifier(source));
-					List<DiscoveryInformation> x = new ArrayList<DiscoveryInformation>();
-					for (DiscoveryInformation discovered : r) {
-						if (discovered.getClaimedIdentifier().getIdentifier().equals(source)) {
-							discovered = new DiscoveryInformation(discovered.getOPEndpoint(),
-									id,
-									discovered.getDelegateIdentifier(),
-									discovered.getVersion(),
-									discovered.getTypes()
-							);
+					@Override
+					public List discover(Identifier id) throws DiscoveryException {
+						if (id.getIdentifier().startsWith("http://edx.org/") && id instanceof UrlIdentifier) {
+							String source = "https://www.google.com/accounts/o8/user-xrds?uri=" + id.getIdentifier();
+							List<DiscoveryInformation> r = super.discover(new UrlIdentifier(source));
+							List<DiscoveryInformation> x = new ArrayList<DiscoveryInformation>();
+							for (DiscoveryInformation discovered : r) {
+								if (discovered.getClaimedIdentifier().getIdentifier().equals(source)) {
+									discovered = new DiscoveryInformation(discovered.getOPEndpoint(),
+											id,
+											discovered.getDelegateIdentifier(),
+											discovered.getVersion(),
+											discovered.getTypes()
+											);
+								}
+								x.add(discovered);
+							}
+
+							return x;
 						}
-						x.add(discovered);
+						return super.discover(id);
 					}
-					
-					return x;
-				}				
-				return super.discover(id);
-			}
-		});
+				});
 		return consumerManager
 	}
-	
+
 	@Override
 	public String loginUrl(HttpServletRequest request) {
 		return "https://www.google.com/a/edx.org/o8/ud?be=o8&openid.ns=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0&openid.mode=checkid_setup&openid.claimed_id=https%3A%2F%2Fwww.google.com%2Faccounts%2Fo8%2Fsite-xrds%3Fhd%3Dedx.org&openid.identity=https%3A%2F%2Fwww.google.com%2Faccounts%2Fo8%2Fsite-xrds%3Fhd%3Dedx.org&openid.return_to=http%3A%2F%2Fdev-hotg.edx.org:8080/auth/signIn&openid.ns.ax=http%3A%2F%2Fopenid.net%2Fsrv%2Fax%2F1.0&openid.ax.mode=fetch_request&openid.ax.required=email%2CfirstName%2ClastName&openid.ax.type.email=http%3A%2F%2Fschema.openid.net%2Fcontact%2Femail&openid.ax.type.firstName=http%3A%2F%2Faxschema.org%2FnamePerson%2Ffirst&openid.ax.type.lastName=http%3A%2F%2Faxschema.org%2FnamePerson%2Flast&openid.ns.ext2=http%3A%2F%2Fspecs.openid.net%2Fextensions%2Fui%2F1.0&openid.ext2.icon=true"
@@ -126,10 +126,10 @@ class GoogleAppsOpenIdAuthenticationProvider implements AuthenticationProvider {
 
 		// verify the response
 		VerificationResult verification = manager.verify(receivingURL.toString(), openidResp, discovered)
-		
+
 		// examine the verification result and extract the verified identifier
 		Identifier verified = verification.verifiedId
-		
+
 		// Support for "remember me"
 		if (params.rememberMe) {
 			authToken.rememberMe = true
@@ -146,23 +146,24 @@ class GoogleAppsOpenIdAuthenticationProvider implements AuthenticationProvider {
 			username = emails[0]
 		}
 
-		def authToken = new UsernamePasswordToken(username, User.defaultPass)
+		if (! configService.getAdministrators().contains(username))
+			throw new AuthenticationException("User ${username} is not on the whitelist")
+
 		if (! User.findByUsername(username)) {
 			def user = new User(username: username, passwordHash: new Sha256Hash(User.defaultPass).toHex())
 			user.addToRoles(Role.adminRole)
-			//user.addToPermissions("*:*")	
 			user.save(flush: true)
 		}
-		
+
 		GoogleAppsOpenIdToken token = new GoogleAppsOpenIdToken(verified,username)
-		
+
 		return token
 	}
 
 	@Override
 	AuthenticationInfo authenticate(AsgardToken authToken) {
 		GoogleAppsOpenIdToken token = (GoogleAppsOpenIdToken) authToken
-		
+
 		if (token == null) {
 			throw new AuthenticationException('Google Apps OpenID token cannot be null')
 		}
@@ -173,25 +174,25 @@ class GoogleAppsOpenIdAuthenticationProvider implements AuthenticationProvider {
 		new SimpleAuthenticationInfo(token.principal, token.credentials, 'GoogleAppsOpenIdRealm')
 	}
 
-	
-	
+
+
 	class GoogleAppsOpenIdToken implements AsgardToken, RememberMeAuthenticationToken {
 
 		Object credentials
 		String principal
 		boolean valid = false
-		
+
 		public GoogleAppsOpenIdToken(Object credentials, String principal) {
 			this.credentials = credentials
 			this.principal = principal
-			this.valid = true			
+			this.valid = true
 		}
-		
+
 		@Override
 		public Object getCredentials() {
 			return this.credentials
 		}
-		
+
 		@Override
 		public Object getPrincipal() {
 			return this.principal
@@ -200,7 +201,7 @@ class GoogleAppsOpenIdAuthenticationProvider implements AuthenticationProvider {
 		public isValid() {
 			return this.valid
 		}
-		
+
 		@Override
 		public boolean isRememberMe() {
 			return true;
