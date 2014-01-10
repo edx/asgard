@@ -25,7 +25,7 @@ class SecurityFilters  {
 			before = { true }
 		}
 
-		other(controllerExclude: 'auth') {
+		other(controllerExclude: 'auth|init') {
 			before = {
 				// Ignore direct views (e.g. the default main index page).
 				if (!controllerName) return true
