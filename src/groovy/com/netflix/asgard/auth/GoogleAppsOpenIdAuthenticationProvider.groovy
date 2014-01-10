@@ -103,7 +103,7 @@ class GoogleAppsOpenIdAuthenticationProvider implements AuthenticationProvider {
 		"&openid.mode=checkid_setup" +
 		"&openid.claimed_id=https%3A%2F%2Fwww.google.com%2Faccounts%2Fo8%2Fsite-xrds%3Fhd%3Dedx.org" +
 		"&openid.identity=https%3A%2F%2Fwww.google.com%2Faccounts%2Fo8%2Fsite-xrds%3Fhd%3Dedx.org" + 
-		"&openid.return_to=" + java.net.URLEncoder.encode(configService.getCanonicalServerName(),'UTF-8') + 
+		"&openid.return_to=" + java.net.URLEncoder.encode(configService.getGoogleAppsOauthReturnTo(),'UTF-8') + 
 		"&openid.ns.ax=http%3A%2F%2Fopenid.net%2Fsrv%2Fax%2F1.0" +
 		"&openid.ax.mode=fetch_request" +
 		"&openid.ax.required=email%2CfirstName%2ClastName" +
