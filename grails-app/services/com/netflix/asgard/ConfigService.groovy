@@ -774,4 +774,8 @@ class ConfigService {
 		grailsApplication.config.auth?.administrators ?: []
 	}
 	
+	String getGoogleAppsOauthReturnTo() {
+		grailsApplication.config.auth?.google?.openid?.return_to ?: "http://localhost:8080"				
+	}
+	
 }
