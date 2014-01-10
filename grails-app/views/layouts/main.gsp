@@ -46,7 +46,7 @@
     <div class="header">
       <a href="http://www.youtube.com/watch?v=ApxnAr6pRt0" target="_blank">
         <img id="occasionIcon" class="logo" title="${occasion.message}" src="${resource(dir: 'images/occasion', file: occasion?.iconFileName)}"/>
-        <div class="mainHeader">Asgard</div>
+        <div class="mainHeader">Hammer of the Gods</div>
       </a>
       <span>${env}</span>
     </div>
