@@ -74,9 +74,9 @@ class DbRealm {
         // the required permission's type and project code.
         def user = User.findByUsername(principal)
 		
-		if (user == null)
-			return false
-		
+        if (user == null)
+            return false
+
         def permissions = user.permissions
 
         // Try each of the permissions found and see whether any of
