@@ -18,6 +18,7 @@ package com.netflix.asgard
 import com.amazonaws.services.autoscaling.model.AutoScalingGroup
 import com.amazonaws.services.autoscaling.model.LaunchConfiguration
 import com.amazonaws.services.autoscaling.model.ScheduledUpdateGroupAction
+import com.amazonaws.services.autoscaling.model.TagDescription;
 import com.amazonaws.services.ec2.model.AvailabilityZone
 import com.amazonaws.services.elasticloadbalancing.model.LoadBalancerDescription
 import com.google.common.annotations.VisibleForTesting
@@ -28,6 +29,8 @@ import com.netflix.asgard.model.InstancePriceType
 import com.netflix.asgard.model.ScalingPolicyData
 import com.netflix.asgard.model.SubnetTarget
 import com.netflix.asgard.model.Subnets
+import com.netflix.asgard.model.SwfWorkflowTags
+import com.netflix.asgard.model.TagData;
 import com.netflix.asgard.push.Cluster
 import com.netflix.asgard.push.CommonPushOptions
 import com.netflix.asgard.push.GroupActivateOperation
@@ -37,6 +40,7 @@ import com.netflix.asgard.push.GroupDeleteOperation
 import com.netflix.asgard.push.GroupResizeOperation
 import com.netflix.asgard.push.InitialTraffic
 import com.netflix.grails.contextParam.ContextParam
+
 import grails.converters.JSON
 import grails.converters.XML
 import groovy.transform.PackageScope
@@ -240,6 +244,8 @@ ${lastGroup.loadBalancerNames}"""
             List<ScheduledUpdateGroupAction> newScheduledActions = awsAutoScalingService.copyScheduledActionsForNewAsg(
                     userContext, nextGroupName, lastScheduledActions)
 
+			List<TagDescription> tags = lastGroup.tags
+			
             Integer lastGracePeriod = lastGroup.healthCheckGracePeriod
             String vpcZoneIdentifier = subnets.constructNewVpcZoneIdentifierForPurposeAndZones(subnetPurpose,
                     selectedZones)
@@ -291,7 +297,8 @@ Group: ${loadBalancerNames}"""
                     scheduledActions: newScheduledActions,
                     vpcZoneIdentifier: vpcZoneIdentifier,
                     spotPrice: spotPrice,
-                    ebsOptimized: ebsOptimized
+                    ebsOptimized: ebsOptimized,
+                    tags: tags
             )
             def operation = pushService.startGroupCreate(options)
             flash.message = "${operation.task.name} has been started."
