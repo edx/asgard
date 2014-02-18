@@ -18,6 +18,7 @@ package com.netflix.asgard
 import com.amazonaws.services.autoscaling.model.AutoScalingGroup
 import com.amazonaws.services.autoscaling.model.LaunchConfiguration
 import com.amazonaws.services.autoscaling.model.ScheduledUpdateGroupAction
+import com.amazonaws.services.autoscaling.model.TagDescription;
 import com.amazonaws.services.ec2.model.AvailabilityZone
 import com.amazonaws.services.elasticloadbalancing.model.LoadBalancerDescription
 import com.amazonaws.services.simpleworkflow.flow.ManualActivityCompletionClient
@@ -34,6 +35,7 @@ import com.netflix.asgard.model.ScalingPolicyData
 import com.netflix.asgard.model.SubnetTarget
 import com.netflix.asgard.model.Subnets
 import com.netflix.asgard.model.SwfWorkflowTags
+import com.netflix.asgard.model.TagData;
 import com.netflix.asgard.push.Cluster
 import com.netflix.asgard.push.CommonPushOptions
 import com.netflix.asgard.push.GroupActivateOperation
@@ -43,6 +45,7 @@ import com.netflix.asgard.push.GroupDeleteOperation
 import com.netflix.asgard.push.GroupResizeOperation
 import com.netflix.asgard.push.InitialTraffic
 import com.netflix.grails.contextParam.ContextParam
+
 import grails.converters.JSON
 import grails.converters.XML
 
@@ -75,7 +78,7 @@ class ClusterController {
                 appNames.contains(Relationships.appNameFromGroupName(cluster.name))
             }
         }
-        clusterObjects = clusterObjects.sort{ it.name.toLowerCase() }
+        clusterObjects = clusterObjects.sort { it.name.toLowerCase() }
         withFormat {
             html { [clusters: clusterObjects, appNames: appNames] }
             xml {
@@ -136,7 +139,7 @@ class ClusterController {
                     Subnets subnets = awsEc2Service.getSubnets(userContext)
                     List<String> subnetIds = Relationships.subnetIdsFromVpcZoneIdentifier(lastGroup.vpcZoneIdentifier)
                     String subnetPurpose = subnets.coerceLoneOrNoneFromIds(subnetIds)?.purpose
-                    String vpcId = subnets.mapPurposeToVpcId()[subnetPurpose] ?: ''
+                    String vpcId = subnets.getVpcIdForSubnetPurpose(subnetPurpose) ?: ''
                     List<String> selectedLoadBalancers = Requests.ensureList(
                             params["selectedLoadBalancersForVpcId${vpcId}"]) ?: lastGroup.loadBalancerNames
                     log.debug """ClusterController.show for Cluster '${cluster.name}' Load Balancers from last Group: \
@@ -187,12 +190,12 @@ ${lastGroup.loadBalancerNames}"""
 
     def result = { render view: '/common/result' }
 
-    def proceedWithDeployment(String taskToken, String taskId) {
-        completeDeployment(taskToken, taskId, true)
+    def proceedWithDeployment(String taskToken, String id) {
+        completeDeployment(taskToken, id, true)
     }
 
-    def rollbackDeployment(String taskToken, String taskId) {
-        completeDeployment(taskToken, taskId, false)
+    def rollbackDeployment(String taskToken, String id) {
+        completeDeployment(taskToken, id, false)
     }
 
     private void completeDeployment(String taskToken, String taskId, boolean shouldProceed) {
@@ -216,17 +219,16 @@ ${lastGroup.loadBalancerNames}"""
         attributes?.putAll([
                 deploymentWorkflowOptions: new DeploymentWorkflowOptions(
                         notificationDestination: params.notificationDestination ?: email,
-                        delayDurationMinutes: params.delayDurationMinutes ?: 0,
+                        delayDurationMinutes: params.int('delayDurationMinutes') ?: 0,
                         doCanary: Boolean.parseBoolean(params.doCanary),
-                        canaryCapacity: params.canaryCount ?: 1,
-                        canaryStartUpTimeoutMinutes: params.canaryStartUpTimeoutMinutes ?: 30,
-                        canaryAssessmentDurationMinutes: params.canaryAssessmentDurationMinutes ?: 60,
+                        canaryCapacity: params.int('canaryCount') ?: 1,
+                        canaryStartUpTimeoutMinutes: params.int('canaryStartUpTimeoutMinutes') ?: 30,
+                        canaryJudgmentPeriodMinutes: params.int('canaryJudgmentPeriodMinutes') ?: 60,
                         scaleUp: ProceedPreference.parse(params.scaleUp),
-                        desiredCapacityStartUpTimeoutMinutes: params.desiredCapacityStartUpTimeoutMinutes ?: 40,
-                        desiredCapacityAssessmentDurationMinutes: params.
-                                desiredCapacityAssessmentDurationMinutes ?: 120,
+                        desiredCapacityStartUpTimeoutMinutes: params.int('desiredCapacityStartUpTimeoutMinutes') ?: 40,
+                        desiredCapacityJudgmentPeriodMinutes: params.int('desiredCapacityJudgmentPeriodMinutes') ?: 120,
                         disablePreviousAsg: ProceedPreference.parse(params.disablePreviousAsg),
-                        fullTrafficAssessmentDurationMinutes: params.fullTrafficAssessmentDurationMinutes ?: 240,
+                        fullTrafficJudgmentPeriodMinutes: params.int('fullTrafficJudgmentPeriodMinutes') ?: 240,
                         deletePreviousAsg: ProceedPreference.parse(params.deletePreviousAsg)
                 )
         ])
@@ -265,7 +267,7 @@ ${lastGroup.loadBalancerNames}"""
         Subnets subnets = awsEc2Service.getSubnets(userContext)
         List<String> subnetIds = Relationships.subnetIdsFromVpcZoneIdentifier(lastGroup.vpcZoneIdentifier)
         String subnetPurpose = subnets.coerceLoneOrNoneFromIds(subnetIds)?.purpose
-        String vpcId = subnets.mapPurposeToVpcId()[subnetPurpose] ?: ''
+        String vpcId = subnets.getVpcIdForSubnetPurpose(subnetPurpose) ?: ''
         List<String> selectedLoadBalancers = Requests.ensureList(
                 params["selectedLoadBalancersForVpcId${vpcId}"]) ?: lastGroup.loadBalancerNames
         List<String> subnetPurposes = subnets.getPurposesForZones(availabilityZones*.zoneName,
@@ -287,30 +289,47 @@ ${lastGroup.loadBalancerNames}"""
     }
 
     def deploy(DeployCommand cmd) {
+        UserContext userContext = UserContext.of(request)
         if (cmd.hasErrors()) {
-            chain(action: 'prepareDeployment', model: [cmd:cmd], params: params)
+            flash.message = "Cluster '${cmd.clusterName}' is invalid."
+            chain(action: 'prepareDeployment', model: [cmd: cmd], params: params)
+            return
+        }
+        Cluster cluster = awsAutoScalingService.getCluster(userContext, cmd.clusterName)
+        if (cluster.size() != 1) {
+            flash.message = "Cluster '${cmd.clusterName}' should only have one ASG to enable automatic deployment."
+            chain(action: 'prepareDeployment', model: [cmd: cmd], params: params, id: cmd.clusterName)
+            return
+        }
+        AutoScalingGroupData group = cluster.last()
+        if ( group.isLaunchingSuspended() ||
+             group.isTerminatingSuspended() ||
+             group.isAddingToLoadBalancerSuspended()
+        ) {
+            flash.message = "ASG in cluster '${cmd.clusterName}' should be receiving traffic to enable automatic " +
+                    "deployment."
+            chain(action: 'prepareDeployment', model: [cmd: cmd], params: params, id: cmd.clusterName)
             return
         }
         DeploymentWorkflowOptions deploymentOptions = new DeploymentWorkflowOptions()
         bindData(deploymentOptions, params)
         deploymentOptions.clusterName = cmd.clusterName
 
-        UserContext userContext = UserContext.of(request)
-        String appName = Relationships.appNameFromGroupName(cmd.clusterName)
-        String email = applicationService.getEmailFromApp(userContext, appName)
         if (params.createAsgOnly) {
+            String appName = Relationships.appNameFromGroupName(cmd.clusterName)
+            String email = applicationService.getEmailFromApp(userContext, appName)
             deploymentOptions.with {
                 notificationDestination = email
                 delayDurationMinutes = 0
                 doCanary = false
                 desiredCapacityStartUpTimeoutMinutes = 30
-                desiredCapacityAssessmentDurationMinutes = 0
+                desiredCapacityJudgmentPeriodMinutes = 0
                 disablePreviousAsg = ProceedPreference.No
             }
         }
         String subnetPurpose = params.subnetPurpose
         Subnets subnets = awsEc2Service.getSubnets(userContext)
-        String vpcId = subnets.mapPurposeToVpcId()[subnetPurpose] ?: ''
+        String vpcId = subnets.getVpcIdForSubnetPurpose(subnetPurpose) ?: ''
         List<String> loadBalancerNames = Requests.ensureList(params["selectedLoadBalancersForVpcId${vpcId}"] ?:
             params["selectedLoadBalancers"])
 
@@ -375,7 +394,7 @@ ${lastGroup.loadBalancerNames}"""
             List<String> termPolicies = Requests.ensureList(params.terminationPolicy)
             Subnets subnets = awsEc2Service.getSubnets(userContext)
             String subnetPurpose = params.subnetPurpose
-            String vpcId = subnets.mapPurposeToVpcId()[subnetPurpose] ?: ''
+            String vpcId = subnets.getVpcIdForSubnetPurpose(subnetPurpose) ?: ''
             List<String> loadBalancerNames = Requests.ensureList(params["selectedLoadBalancersForVpcId${vpcId}"] ?:
                     params["selectedLoadBalancers"])
             // Availability zones default to the last group's value since this field is required.
@@ -403,6 +422,8 @@ ${lastGroup.loadBalancerNames}"""
             List<ScheduledUpdateGroupAction> newScheduledActions = awsAutoScalingService.copyScheduledActionsForNewAsg(
                     userContext, nextGroupName, lastScheduledActions)
 
+			List<TagDescription> tags = lastGroup.tags
+			
             Integer lastGracePeriod = lastGroup.healthCheckGracePeriod
             String vpcZoneIdentifier = subnets.constructNewVpcZoneIdentifierForPurposeAndZones(subnetPurpose,
                     selectedZones)
@@ -454,7 +475,8 @@ Group: ${loadBalancerNames}"""
                     scheduledActions: newScheduledActions,
                     vpcZoneIdentifier: vpcZoneIdentifier,
                     spotPrice: spotPrice,
-                    ebsOptimized: ebsOptimized
+                    ebsOptimized: ebsOptimized,
+                    tags: tags
             )
             def operation = pushService.startGroupCreate(options)
             flash.message = "${operation.task.name} has been started."

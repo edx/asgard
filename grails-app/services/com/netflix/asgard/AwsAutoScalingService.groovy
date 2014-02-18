@@ -216,7 +216,8 @@ class AwsAutoScalingService implements CacheInitializer, InitializingBean {
         Map<String, Image> imageIdsToImages = awsEc2Service.mapImageIdsToImagesForMergedInstances(userContext,
                 mergedInstances)
         Collection<ScalingPolicyData> scalingPolicies = getScalingPolicyDatas(userContext, group.autoScalingGroupName)
-        AutoScalingGroupData.from(group, instanceIdsToLoadBalancerLists, mergedInstances, imageIdsToImages, scalingPolicies)
+        AutoScalingGroupData.from(group, instanceIdsToLoadBalancerLists, mergedInstances, imageIdsToImages,
+                scalingPolicies)
     }
 
     Cluster buildCluster(UserContext userContext, Collection<AutoScalingGroup> allGroups, String clusterName,
@@ -335,7 +336,8 @@ class AwsAutoScalingService implements CacheInitializer, InitializingBean {
                                                 From from = From.AWS) {
         if (names) {
             if (from == From.CACHE) {
-                return names.collect { caches.allAutoScalingGroups.by(userContext.region).get(it) }.findAll { it != null }
+                return names.collect { caches.allAutoScalingGroups.by(userContext.region).get(it) }.findAll {
+                    it != null }
             }
             DescribeAutoScalingGroupsResult result = awsClient.by(userContext.region).describeAutoScalingGroups(
                     new DescribeAutoScalingGroupsRequest().withAutoScalingGroupNames(names))
@@ -604,7 +606,7 @@ class AwsAutoScalingService implements CacheInitializer, InitializingBean {
      *
      * @param names of the scheduled actions to retrieve
      * @return scheduled action details for names, empty if no names were specified
-     * @see com.amazonaws.services.autoscaling.AmazonAutoScaling#describeScheduledActions(DescribeScheduledActionsRequest)
+     * @see AmazonAutoScaling#describeScheduledActions(DescribeScheduledActionsRequest)
      */
     List<ScheduledUpdateGroupAction> getScheduledActions(UserContext userContext, Collection<String> names) {
         if (!names) { return [] }
@@ -617,7 +619,7 @@ class AwsAutoScalingService implements CacheInitializer, InitializingBean {
      *
      * @param name of the ASG
      * @return scheduled action details, empty if no names were specified
-     * @see com.amazonaws.services.autoscaling.AmazonAutoScaling#describeScheduledActions(DescribeScheduledActionsRequest)
+     * @see AmazonAutoScaling#describeScheduledActions(DescribeScheduledActionsRequest)
      */
     List<ScheduledUpdateGroupAction> getScheduledActionsForGroup(UserContext userContext, String autoScalingGroupName) {
         if (!autoScalingGroupName) { return [] }
@@ -643,7 +645,7 @@ class AwsAutoScalingService implements CacheInitializer, InitializingBean {
      *
      * @param names of the scheduled actions to retrieve
      * @return updated scheduled action names
-     * @see com.amazonaws.services.autoscaling.AmazonAutoScaling#putScheduledUpdateGroupAction(PutScheduledUpdateGroupActionRequest)
+     * @see AmazonAutoScaling#putScheduledUpdateGroupAction(PutScheduledUpdateGroupActionRequest)
      */
     List<String> createScheduledActions(UserContext userContext, Collection<ScheduledUpdateGroupAction> actions,
                                        Task existingTask = null) {
@@ -670,7 +672,7 @@ class AwsAutoScalingService implements CacheInitializer, InitializingBean {
      * Updates a scheduled action based on details. Will try to create one if it does not exist.
      *
      * @param scheduled action details to update with
-     * @see com.amazonaws.services.autoscaling.AmazonAutoScaling#putScheduledUpdateGroupAction(PutScheduledUpdateGroupActionRequest)
+     * @see AmazonAutoScaling#putScheduledUpdateGroupAction(PutScheduledUpdateGroupActionRequest)
      */
     void updateScheduledAction(UserContext userContext, ScheduledUpdateGroupAction action, Task existingTask = null) {
         def request = new PutScheduledUpdateGroupActionRequest(scheduledActionName: action.scheduledActionName,
@@ -685,7 +687,7 @@ class AwsAutoScalingService implements CacheInitializer, InitializingBean {
      * Deletes a scheduled action.
      *
      * @param action details for action to delete
-     * @see com.amazonaws.services.autoscaling.AmazonAutoScaling#deleteScheduledAction(DeleteScheduledActionRequest)
+     * @see AmazonAutoScaling#deleteScheduledAction(DeleteScheduledActionRequest)
      */
     void deleteScheduledAction(UserContext userContext, ScheduledUpdateGroupAction action, Task existingTask = null) {
         taskService.runTask(userContext, "Delete Scheduled Action '${action.scheduledActionName}'", { Task task ->
@@ -746,16 +748,16 @@ class AwsAutoScalingService implements CacheInitializer, InitializingBean {
     }
 
     /**
-     * Analyze an ASG and determine if it is healthy.
+     * Analyze an ASG and determine if it is operational.
      *
      * @param userContext who made the call, why, and in what region
      * @param asgName name of the ASG
      * @param expectedInstanceCount number of instances that are expected
-     * @return a String describing why the ASG is unhealthy or null if it is healthy
+     * @return textual description of the reason the ASG is not operational, or an empty String if it is
      */
-    String reasonAsgIsUnhealthy(UserContext userContext, String asgName, int expectedInstanceCount) {
+    String reasonAsgIsNotOperational(UserContext userContext, String asgName, int expectedInstanceCount) {
         if (expectedInstanceCount == 0) {
-            return null
+            return ''
         }
         AutoScalingGroup asg = getAutoScalingGroup(userContext, asgName)
         if (!asg) {
@@ -767,16 +769,18 @@ class AwsAutoScalingService implements CacheInitializer, InitializingBean {
         if (asg.instances.find { it.lifecycleState != LifecycleState.InService.name() }) {
             return 'Waiting for instances to be in service.'
         }
-        List<ApplicationInstance> applicationInstances = discoveryService.getAppInstancesByIds(userContext,
-                asg.instances*.instanceId)
-        if (applicationInstances.size() < expectedInstanceCount) {
-            return 'Waiting for Eureka data about instances.'
-        }
-        if (applicationInstances.find { it.status != EurekaStatus.UP.name() }) {
-            return 'Waiting for all instances to be available in Eureka.'
-        }
-        if (!awsEc2Service.checkHostsHealth(applicationInstances*.healthCheckUrl)) {
-            return 'Waiting for all instances to pass health checks.'
+        if (configService.getRegionalDiscoveryServer(userContext.region)) {
+            List<ApplicationInstance> applicationInstances = discoveryService.getAppInstancesByIds(userContext,
+                    asg.instances*.instanceId)
+            if (applicationInstances.size() < expectedInstanceCount) {
+                return 'Waiting for Eureka data about instances.'
+            }
+            if (applicationInstances.find { it.status != EurekaStatus.UP.name() }) {
+                return 'Waiting for all instances to be available in Eureka.'
+            }
+            if (!awsEc2Service.checkHostsHealth(applicationInstances*.healthCheckUrl)) {
+                return 'Waiting for all instances to pass health checks.'
+            }
         }
         if (asg.loadBalancerNames) {
             String loadBalancerThatSeesOutOfServiceInstance = asg.loadBalancerNames.find {
@@ -789,7 +793,7 @@ class AwsAutoScalingService implements CacheInitializer, InitializingBean {
                 return 'Waiting for all instances to pass ELB health checks.'
             }
         }
-        null
+        ''
     }
 
     /**
@@ -863,7 +867,8 @@ class AwsAutoScalingService implements CacheInitializer, InitializingBean {
             request.availabilityZones = group.availabilityZones
         }
 
-        taskService.runTask(userContext, "Update Autoscaling Group '${autoScalingGroupData.autoScalingGroupName}'", { Task task ->
+        String taskName = "Update Autoscaling Group '${autoScalingGroupData.autoScalingGroupName}'"
+        taskService.runTask(userContext, taskName, { Task task ->
             processTypesToSuspend.each {
                 suspendProcess(userContext, it, autoScalingGroupData.autoScalingGroupName, task)
             }
@@ -882,8 +887,8 @@ class AwsAutoScalingService implements CacheInitializer, InitializingBean {
 
     AutoScalingGroup suspendProcess(UserContext userContext, AutoScalingProcessType autoScalingProcessType,
                                     String autoScalingGroupName, Task existingTask) {
-        SuspendProcessesRequest suspendProcessesRequest = new SuspendProcessesRequest().withAutoScalingGroupName(autoScalingGroupName).
-                withScalingProcesses([autoScalingProcessType.name()])
+        SuspendProcessesRequest suspendProcessesRequest = new SuspendProcessesRequest().
+                withAutoScalingGroupName(autoScalingGroupName).withScalingProcesses([autoScalingProcessType.name()])
         taskService.runTask(userContext,
                 "${autoScalingProcessType.suspendMessage} for auto scaling group '${autoScalingGroupName}'", { task ->
             awsClient.by(userContext.region).suspendProcesses(suspendProcessesRequest)
@@ -893,8 +898,8 @@ class AwsAutoScalingService implements CacheInitializer, InitializingBean {
 
     AutoScalingGroup resumeProcess(UserContext userContext, AutoScalingProcessType autoScalingProcessType,
                                    String autoScalingGroupName, Task existingTask) {
-        ResumeProcessesRequest resumeProcessesRequest = new ResumeProcessesRequest().withAutoScalingGroupName(autoScalingGroupName).
-                withScalingProcesses([autoScalingProcessType.name()])
+        ResumeProcessesRequest resumeProcessesRequest = new ResumeProcessesRequest().
+                withAutoScalingGroupName(autoScalingGroupName).withScalingProcesses([autoScalingProcessType.name()])
         taskService.runTask(userContext,
                 "${autoScalingProcessType.resumeMessage} for auto scaling group '${autoScalingGroupName}'", { task ->
             awsClient.by(userContext.region).resumeProcesses(resumeProcessesRequest)
@@ -941,8 +946,9 @@ class AwsAutoScalingService implements CacheInitializer, InitializingBean {
         String suffix = tagNameValuePairs.size() == 1 ? '' : 's'
         String msg = "Create tag${suffix} ${tagNameValuePairs} on Auto Scaling Group on '${autoScalingGroupName}'"
         taskService.runTask(userContext, msg, { Task task ->
-            CreateOrUpdateTagsRequest request = new CreateOrUpdateTagsRequest(autoScalingGroupName: autoScalingGroupName,
-                    forceOverwriteTags: true, propagate: true, tags: tagStringsEqualDelimited)
+            CreateOrUpdateTagsRequest request = new CreateOrUpdateTagsRequest(
+                    autoScalingGroupName: autoScalingGroupName, forceOverwriteTags: true, propagate: true,
+                    tags: tagStringsEqualDelimited)
             awsClient.by(userContext.region).createOrUpdateTags(request)
         }, Link.to(EntityType.autoScaling, autoScalingGroupName), existingTask)
 
@@ -986,7 +992,8 @@ class AwsAutoScalingService implements CacheInitializer, InitializingBean {
     void deregisterAllInstancesInAutoScalingGroupFromLoadBalancers(UserContext userContext, String name,
                                                                    Task existingTask = null) {
         Check.notNull(name, AutoScalingGroup, "name")
-        taskService.runTask(userContext, "Deregister all instances in Auto Scaling Group '${name}' from ELBs", { Task task ->
+        String taskName = "Deregister all instances in Auto Scaling Group '${name}' from ELBs"
+        taskService.runTask(userContext, taskName, { Task task ->
             AutoScalingGroup group = getAutoScalingGroup(userContext, name)
             if (group) {
                 List<String> loadBalancerNames = group.loadBalancerNames
@@ -1003,7 +1010,7 @@ class AwsAutoScalingService implements CacheInitializer, InitializingBean {
         Check.notNull(groupName, AutoScalingGroup, 'groupName')
         AutoScalingGroup group = getAutoScalingGroup(userContext, groupName)
         Closure work = { Task task ->
-            List<Instance> instances = instanceIds.collect { new Instance().withInstanceId(it) } // elasticloadbalancing.model.Instance type
+            List<Instance> instances = instanceIds.collect { new Instance().withInstanceId(it) }
             if (instances) {
                 for (String loadBalancerName in group.loadBalancerNames) {
                     awsLoadBalancerService.removeInstances(userContext, loadBalancerName, instanceIds, task)
@@ -1026,29 +1033,28 @@ class AwsAutoScalingService implements CacheInitializer, InitializingBean {
         Check.notNull(instanceId, Instance, 'instanceId')
         AutoScalingGroup group = getAutoScalingGroupFor(userContext, instanceId)
         if (group) {
+            String groupName = group.autoScalingGroupName
             if (group.desiredCapacity <= group.minSize) {
                 final AutoScalingGroupData autoScalingGroupData = AutoScalingGroupData.forUpdate(
-                        group.autoScalingGroupName, group.launchConfigurationName,
+                        groupName, group.launchConfigurationName,
                         group.minSize - 1, group.desiredCapacity, group.maxSize, group.defaultCooldown,
                         group.healthCheckType, group.healthCheckGracePeriod, group.terminationPolicies,
                         group.availabilityZones)
                 updateAutoScalingGroup(userContext, autoScalingGroupData)
             }
-            String msg = "Terminate instance '${instanceId}' and shrink auto scaling group '${group.autoScalingGroupName}'"
+            String msg = "Terminate instance '${instanceId}' and shrink auto scaling group '${groupName}'"
             taskService.runTask(userContext, msg, { Task task ->
-                deregisterInstancesInAutoScalingGroupFromLoadBalancers(userContext, group.autoScalingGroupName,
+                deregisterInstancesInAutoScalingGroupFromLoadBalancers(userContext, groupName,
                     [instanceId], task)
                 awsClient.by(userContext.region).terminateInstanceInAutoScalingGroup(
                         new TerminateInstanceInAutoScalingGroupRequest().withInstanceId(instanceId).
                                 withShouldDecrementDesiredCapacity(true))
-            }, Link.to(EntityType.autoScaling, group.autoScalingGroupName))
+            }, Link.to(EntityType.autoScaling, groupName))
 
             return group
         }
         null
     }
-
-    // public TerminateInstanceInAutoScalingGroupResponse terminateInstanceInAutoScalingGroup(TerminateInstanceInAutoScalingGroupRequest request) throws AmazonAutoScalingException;
 
     // Launch Configurations
 
@@ -1067,7 +1073,8 @@ class AwsAutoScalingService implements CacheInitializer, InitializingBean {
     }
 
     private DescribeLaunchConfigurationsResult retrieveLaunchConfigurationsForToken(Region region, String nextToken) {
-        awsClient.by(region).describeLaunchConfigurations(new DescribeLaunchConfigurationsRequest().withNextToken(nextToken))
+        awsClient.by(region).describeLaunchConfigurations(
+                new DescribeLaunchConfigurationsRequest().withNextToken(nextToken))
     }
 
     private void ensureUserDataIsDecodedAndTruncated(LaunchConfiguration launchConfiguration) {

@@ -18,6 +18,8 @@ package com.netflix.asgard
 import com.amazonaws.AmazonServiceException
 import com.amazonaws.services.ec2.AmazonEC2
 import com.amazonaws.services.ec2.model.AuthorizeSecurityGroupIngressRequest
+import com.amazonaws.services.ec2.model.DescribeInstancesRequest
+import com.amazonaws.services.ec2.model.DescribeInstancesResult
 import com.amazonaws.services.ec2.model.DescribeSecurityGroupsRequest
 import com.amazonaws.services.ec2.model.DescribeSecurityGroupsResult
 import com.amazonaws.services.ec2.model.DescribeSubnetsResult
@@ -26,12 +28,14 @@ import com.amazonaws.services.ec2.model.Instance
 import com.amazonaws.services.ec2.model.InstanceState
 import com.amazonaws.services.ec2.model.IpPermission
 import com.amazonaws.services.ec2.model.Placement
+import com.amazonaws.services.ec2.model.Reservation
 import com.amazonaws.services.ec2.model.ReservedInstances
 import com.amazonaws.services.ec2.model.RevokeSecurityGroupIngressRequest
 import com.amazonaws.services.ec2.model.SecurityGroup
 import com.amazonaws.services.ec2.model.Subnet
 import com.amazonaws.services.ec2.model.Tag
 import com.amazonaws.services.ec2.model.UserIdGroupPair
+import com.amazonaws.services.ec2.model.Vpc
 import com.google.common.collect.ImmutableList
 import com.netflix.asgard.model.SecurityGroupOption
 import com.netflix.asgard.model.SubnetData
@@ -40,33 +44,44 @@ import com.netflix.asgard.model.ZoneAvailability
 import spock.lang.Specification
 import spock.lang.Unroll
 
+@SuppressWarnings("GroovyAssignabilityCheck")
 class AwsEc2ServiceUnitSpec extends Specification {
 
     UserContext userContext
     AmazonEC2 mockAmazonEC2
+    CachedMap mockVpcCache
+    CachedMap mockSubnetCache
     CachedMap mockSecurityGroupCache
     CachedMap mockInstanceCache
     CachedMap mockReservationCache
     AwsEc2Service awsEc2Service
+    ConfigService configService
+    TaskService taskService
 
     def setup() {
         userContext = UserContext.auto()
         mockAmazonEC2 = Mock(AmazonEC2)
+        mockVpcCache = Mock(CachedMap)
+        mockSubnetCache = Mock(CachedMap)
         mockSecurityGroupCache = Mock(CachedMap)
         mockInstanceCache = Mock(CachedMap)
         mockReservationCache = Mock(CachedMap)
         Caches caches = new Caches(new MockCachedMapBuilder([
+                (EntityType.vpc): mockVpcCache,
+                (EntityType.subnet): mockSubnetCache,
                 (EntityType.security): mockSecurityGroupCache,
                 (EntityType.instance): mockInstanceCache,
                 (EntityType.reservation): mockReservationCache,
         ]))
-        TaskService taskService = new TaskService() {
-            def runTask(UserContext userContext, String name, Closure work, Link link = null) {
+        taskService = Spy(TaskService) {
+            runTask(_, _, _, _) >> {
+                Closure work = it[2]
                 work(new Task())
             }
         }
+        configService = Mock(ConfigService)
         awsEc2Service = new AwsEc2Service(awsClient: new MultiRegionAwsClient({ mockAmazonEC2 }), caches: caches,
-                taskService: taskService)
+                configService: configService, taskService: taskService)
     }
 
     @Unroll("""getInstancesWithSecurityGroup should return #instanceIds when groupId is #groupId \
@@ -116,6 +131,22 @@ and groupName is #groupName""")
 
         then:
         instances*.instanceId.sort() == ['i-grouchy', 'i-papa', 'i-smurfette']
+    }
+
+    def 'should get instance reservation'() {
+
+        DescribeInstancesRequest request = new DescribeInstancesRequest().withInstanceIds('i-deadbeef')
+        Instance instance = new Instance(instanceId: 'i-deadbeef')
+        Reservation expectedRes = new Reservation(instances: [instance])
+
+        when:
+        Reservation resultRes = awsEc2Service.getInstanceReservation(userContext, 'i-deadbeef')
+
+        then:
+        resultRes == expectedRes
+        1 * mockAmazonEC2.describeInstances(request) >> new DescribeInstancesResult(reservations: [expectedRes])
+        1 * mockInstanceCache.put('i-deadbeef', instance)
+        0 * _
     }
 
     def 'zone availabilities should sum, group, and filter reservation counts and instance counts'() {
@@ -351,6 +382,7 @@ and groupName is #groupName""")
                 new SubnetData(subnetId: 'subnet-e9b0a3a4', availabilityZone: 'us-east-1a', purpose: 'external',
                         target: SubnetTarget.ELB),
         ]
+        0 * _
     }
 
     private Collection<SecurityGroup> simulateWarGames() {
@@ -381,6 +413,7 @@ and groupName is #groupName""")
                 new SecurityGroupOption('wopr', 'joshua', false, '7001'),
         ]
         1 * mockSecurityGroupCache.list() >> { warGamesSecurityGroups }
+        0 * _
     }
 
     def 'options for source group should include all groups sorted, but only some allowed to be called by source'() {
@@ -402,23 +435,25 @@ and groupName is #groupName""")
                 new SecurityGroupOption('joshua', 'wopr', true, '7101-7102'),
         ]
         1 * mockSecurityGroupCache.list() >> { simulateWarGames() }
+        0 * _
     }
 
-    def 'should update security groups'() {
+    def 'should update security group ingress permissions with auth and revoke but only one task run'() {
         List<UserIdGroupPair> userIdGroupPairs = [new UserIdGroupPair(groupId: 'sg-s')]
-        SecurityGroup source = new SecurityGroup(groupName: 'source', groupId: 'sg-s')
-        SecurityGroup target = new SecurityGroup(groupName: 'target', groupId: 'sg-t', ipPermissions: [
-                new IpPermission(fromPort: 1, toPort: 1, userIdGroupPairs: userIdGroupPairs),
-                new IpPermission(fromPort: 2, toPort: 2, userIdGroupPairs: userIdGroupPairs),
+        SecurityGroup source = new SecurityGroup(groupId: 'sg-s')
+        SecurityGroup target = new SecurityGroup(groupId: 'sg-t', ipPermissions: [
+                new IpPermission(ipProtocol: 'tcp', fromPort: 1, toPort: 1, userIdGroupPairs: userIdGroupPairs),
+                new IpPermission(ipProtocol: 'tcp', fromPort: 2, toPort: 2, userIdGroupPairs: userIdGroupPairs),
         ])
 
         when:
         awsEc2Service.updateSecurityGroupPermissions(userContext, target, source, [
-                new IpPermission(fromPort: 2, toPort: 2),
-                new IpPermission(fromPort: 3, toPort: 3),
+                new IpPermission(ipProtocol: 'tcp', fromPort: 2, toPort: 2),
+                new IpPermission(ipProtocol: 'tcp', fromPort: 3, toPort: 3)
         ])
 
         then:
+        1 * configService.getAwsAccountNumber()
         1 * mockAmazonEC2.authorizeSecurityGroupIngress(new AuthorizeSecurityGroupIngressRequest(groupId: 'sg-t',
                 ipPermissions: [
                         new IpPermission(fromPort: 3, toPort: 3, ipProtocol: 'tcp', userIdGroupPairs: userIdGroupPairs),
@@ -429,6 +464,51 @@ and groupName is #groupName""")
                 ]))
         1 * mockAmazonEC2.describeSecurityGroups(_) >> new DescribeSecurityGroupsResult(
                 securityGroups: [new SecurityGroup()])
+        1 * taskService.runTask(_, _, _, _) >> {
+            Closure work = it[2]
+            work(new Task())
+        }
         0 * _
+    }
+
+    def 'should get subnet IDs for default VPC'() {
+
+        when:
+        List<String> subnetIds = awsEc2Service.getDefaultVpcSubnetIds(UserContext.auto())
+
+        then:
+        subnetIds == ['subnet-luke', 'subnet-han']
+        2 * mockVpcCache.list() >> [new Vpc(vpcId: 'vpc-123'), new Vpc(vpcId: 'vpc-789', isDefault: true)]
+        1 * mockSubnetCache.list() >> [
+                new Subnet(subnetId: 'subnet-luke', vpcId: 'vpc-789'),
+                new Subnet(subnetId: 'subnet-han', vpcId: 'vpc-789'),
+                new Subnet(subnetId: 'subnet-vader', vpcId: 'vpc-123'),
+                new Subnet(subnetId: 'subnet-palpatine', vpcId: 'vpc-123')
+        ]
+        0 * _
+    }
+
+    def 'should get zero subnet IDs for default VPC if no default VPC exists'() {
+
+        when:
+        List<String> subnetIds = awsEc2Service.getDefaultVpcSubnetIds(UserContext.auto())
+
+        then:
+        subnetIds == []
+        1 * mockVpcCache.list() >> [new Vpc(vpcId: 'vpc-123')]
+        0 * _
+    }
+
+    def 'should convert two port numbers to a port range string'(){
+        expect:
+        '7001-7002' == AwsEc2Service.portString(7001, 7002)
+        '7001' == AwsEc2Service.portString(7001, 7001)
+    }
+
+    def 'should convert a comma-delimited string of port ranges to port-populated IpPermission objects'() {
+        expect:
+        [
+                new IpPermission(fromPort: 7001, toPort: 7001), new IpPermission(fromPort: 7101, toPort: 7102)
+        ] == AwsEc2Service.permissionsFromString('7001,7101-7102')
     }
 }

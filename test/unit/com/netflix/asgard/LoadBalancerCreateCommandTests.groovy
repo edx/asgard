@@ -20,7 +20,7 @@ import grails.test.mixin.TestFor
 import org.junit.Before
 import org.junit.Test
 
-// http://stackoverflow.com/questions/1703952/grails-how-do-you-unit-test-a-command-object-with-a-service-injected-into-it
+// http://stackoverflow.com/questions/1703952/grails-how-do-you-unit-test-a-command-object-with-a-service-injected
 @TestFor(LoadBalancerController)
 class LoadBalancerCreateCommandTests {
 
@@ -108,21 +108,23 @@ class LoadBalancerCreateCommandTests {
 
     @Test
     void testNullStackIsValid() {
-        LoadBalancerCreateCommand cmd = validateParams(applicationService: appService, appName: "abcache", stack:null)
+        LoadBalancerCreateCommand cmd = validateParams(applicationService: appService, appName: "abcache", stack: null)
         assert !cmd.hasErrors()
         assert 0 == cmd.errors.errorCount
     }
 
     @Test
     void testStackIsValid() {
-        LoadBalancerCreateCommand cmd = validateParams(applicationService: appService, appName: "abcache", stack:"iphone")
+        LoadBalancerCreateCommand cmd = validateParams(applicationService: appService, appName: "abcache",
+                stack: "iphone")
         assert !cmd.hasErrors()
         assert 0 == cmd.errors.errorCount
     }
 
     @Test
     void testStackIsInvalid() {
-        LoadBalancerCreateCommand cmd = validateParams(applicationService: appService, appName: "abcache", stack:"iphone-and-ipad")
+        LoadBalancerCreateCommand cmd = validateParams(applicationService: appService, appName: "abcache",
+                stack: "iphone-and-ipad")
         assert cmd.hasErrors()
         assert 1 == cmd.errors.errorCount
         assert "The stack must be empty or consist of alphanumeric characters" == cmd.errors.stack
@@ -137,14 +139,16 @@ class LoadBalancerCreateCommandTests {
 
     @Test
     void testNullNewStackIsValid() {
-        LoadBalancerCreateCommand cmd = validateParams(applicationService: appService, appName: "abcache", newStack:null)
+        LoadBalancerCreateCommand cmd = validateParams(applicationService: appService, appName: "abcache",
+                newStack: null)
         assert !cmd.hasErrors()
         assert 0 == cmd.errors.errorCount
     }
 
     @Test
     void testNewStackIsValid() {
-        LoadBalancerCreateCommand cmd = validateParams(applicationService: appService, appName: "abcache", newStack:"iphone")
+        LoadBalancerCreateCommand cmd = validateParams(applicationService: appService, appName: "abcache",
+                newStack: "iphone")
         assert !cmd.hasErrors()
         assert 0 == cmd.errors.errorCount
     }
@@ -159,7 +163,8 @@ class LoadBalancerCreateCommandTests {
 
     @Test
     void testNewStackWithReservedFormatIsNotValid() {
-        LoadBalancerCreateCommand cmd = validateParams(applicationService: appService, appName: "abcache", newStack:"v293")
+        LoadBalancerCreateCommand cmd = validateParams(applicationService: appService, appName: "abcache",
+                newStack:"v293")
         assert cmd.hasErrors()
         assert 1 == cmd.errors.errorCount
         assert "name.usesReservedFormat" == cmd.errors.newStack
@@ -167,7 +172,8 @@ class LoadBalancerCreateCommandTests {
 
     @Test
     void testNewStackIsInvalid() {
-        LoadBalancerCreateCommand cmd = validateParams(applicationService: appService, appName: "abcache", newStack:"iphone-and-ipad")
+        LoadBalancerCreateCommand cmd = validateParams(applicationService: appService, appName: "abcache",
+                newStack: "iphone-and-ipad")
         assert cmd.hasErrors()
         assert 1 == cmd.errors.errorCount
         assert "stack.illegalChar" == cmd.errors.newStack
@@ -175,7 +181,8 @@ class LoadBalancerCreateCommandTests {
 
     @Test
     void testStackAndNewStackIsInvalid() {
-        LoadBalancerCreateCommand cmd = validateParams(applicationService: appService, appName: "abcache", stack:"iphone", newStack:"iphone")
+        LoadBalancerCreateCommand cmd = validateParams(applicationService: appService, appName: "abcache",
+                stack: "iphone", newStack: "iphone")
         assert cmd.hasErrors()
         assert 1 == cmd.errors.errorCount
         assert "stack.matchesNewStack" == cmd.errors.newStack
@@ -183,7 +190,8 @@ class LoadBalancerCreateCommandTests {
 
     @Test
     void testDetailWithReservedFormatIsInvalid() {
-        LoadBalancerCreateCommand cmd = validateParams(applicationService: appService, appName: "abcache", detail: "v021")
+        LoadBalancerCreateCommand cmd = validateParams(applicationService: appService, appName: "abcache",
+                detail: "v021")
         assert cmd.hasErrors()
         assert 1 == cmd.errors.errorCount
         assert "name.usesReservedFormat" == cmd.errors.detail
@@ -191,14 +199,16 @@ class LoadBalancerCreateCommandTests {
 
     @Test
     void testPortNumbers() {
-        LoadBalancerCreateCommand cmd = validateParams(applicationService: appService, appName: "abcache", newStack:"iphone", lbPort1: 99999999, instancePort1: 99999999)
+        LoadBalancerCreateCommand cmd = validateParams(applicationService: appService, appName: "abcache",
+                newStack: "iphone", lbPort1: 99999999, instancePort1: 99999999)
         assert cmd.hasErrors()
         assert 2 == cmd.errors.errorCount
     }
 
     @Test
     void testIncompleteListener2() {
-        LoadBalancerCreateCommand cmd = validateParams(applicationService: appService, appName: "abcache", newStack:"iphone", protocol2: "HTTP")
+        LoadBalancerCreateCommand cmd = validateParams(applicationService: appService, appName: "abcache",
+                newStack: "iphone", protocol2: "HTTP")
         assert cmd.hasErrors()
         assert 1 == cmd.errors.errorCount
         assert "Please enter port numbers for the second protocol" == cmd.errors.protocol2
@@ -206,8 +216,9 @@ class LoadBalancerCreateCommandTests {
 
     @Test
     void testTotalNameIsTooLong() {
+        def deets = "integration-24-usa-iphone-ios5-even-numbered-days-except-weekends-and-except-when-the-moon-is-full"
         LoadBalancerCreateCommand cmd = validateParams(applicationService: appService, appName: "abcache",
-                stack: "navigator", detail: "integration-240-usa-iphone-ipad-ios5-even-numbered-days-except-weekends-and-excluding-when-the-moon-is-full")
+                stack: "navigator", detail: deets)
         assert cmd.hasErrors()
         assert 1 == cmd.errors.errorCount
         assert "The complete load balancer name cannot exceed 96 characters" == cmd.errors.appName

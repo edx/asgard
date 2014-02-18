@@ -28,11 +28,12 @@ class TopicController {
     def configService
     def applicationService
 
-    def allowedMethods = [save: 'POST', update: 'POST', delete: 'POST', subscribe: 'POST', unsubscribe: 'POST', publish: 'POST']
+    def allowedMethods = [save: 'POST', update: 'POST', delete: 'POST', subscribe: 'POST', unsubscribe: 'POST',
+            publish: 'POST']
 
     static editActions = ['prepareSubscribe', 'preparePublish']
 
-    def index = { redirect(action: 'list', params:params) }
+    def index = { redirect(action: 'list', params: params) }
 
     def list = {
         UserContext userContext = UserContext.of(request)

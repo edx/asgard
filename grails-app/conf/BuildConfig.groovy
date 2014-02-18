@@ -13,8 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import org.apache.ivy.plugins.resolver.FileSystemResolver
 import org.apache.ivy.plugins.resolver.URLResolver
+
 
 grails.project.work.dir = 'work'
 grails.project.class.dir = 'target/classes'
@@ -33,7 +35,7 @@ codenarc {
             title = 'Asgard CodeNarc Report'
         }
     }
-    ruleSetFiles='file:grails-app/conf/CodeNarcRuleSet.groovy'
+    ruleSetFiles = 'file:grails-app/conf/CodeNarcRuleSet.groovy'
     maxPriority1Violations = 0
     maxPriority2Violations = 0
     maxPriority3Violations = 0
@@ -48,9 +50,10 @@ grails.project.dependency.resolution = {
     repositories {
         grailsPlugins()
         grailsHome()
-        grailsCentral()
         mavenCentral()
-
+        grailsCentral()
+		//mavenRepo "https://oss.sonatype.org/content/repositories/openid4java-snapshots"
+		
         // Optional custom repository for dependencies.
         Closure internalRepo = {
             String repoUrl = 'http://artifacts/ext-releases-local'
@@ -82,13 +85,15 @@ grails.project.dependency.resolution = {
 
         compile(
                 // Ease of use library for Amazon Simple Workflow Service (SWF), e.g., WorkflowClientFactory
-                'com.netflix.glisten:glisten:0.2',
+                'com.netflix.glisten:glisten:0.3',
         ) {
             // If Glisten is using a different AWS Java SDK we don't want to pick up the transitive dep by accident.
             transitive = false
         }
 
         compile(
+				'org.openid4java:openid4java:0.9.8',
+			
                 // Amazon Web Services programmatic interface. Transitive dependency of glisten, but also used directly.
                 'com.amazonaws:aws-java-sdk:1.6.6',
 
@@ -152,6 +157,11 @@ grails.project.dependency.resolution = {
 
         // Optional dependency for Spock to support mocking objects without a parameterless constructor.
         test 'org.objenesis:objenesis:1.2'
+
+        test "org.seleniumhq.selenium:selenium-support:2.35.0"
+        test "org.seleniumhq.selenium:selenium-chrome-driver:2.35.0"
+        test "org.gebish:geb-spock:0.9.2"
+
     }
 
     plugins {
@@ -161,6 +171,9 @@ grails.project.dependency.resolution = {
         compile ':shiro:1.1.4'
         compile ":standalone:1.1.1"
 
+        compile ":resources:1.2-RC1"
+		compile ":jquery:1.8.0"
+
         runtime ":cors:1.0.4"
 
         // Spock in Grails 2.2.x http://grails.org/plugin/spock
@@ -169,6 +182,7 @@ grails.project.dependency.resolution = {
         }
 
         test ':code-coverage:1.2.5'
+        test ':geb:0.9.2'
 
         build ":tomcat:$grailsVersion"
     }

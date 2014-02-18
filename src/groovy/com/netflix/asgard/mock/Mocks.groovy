@@ -53,7 +53,6 @@ import com.netflix.asgard.MultiRegionAwsClient
 import com.netflix.asgard.PushService
 import com.netflix.asgard.Region
 import com.netflix.asgard.RestClientService
-import com.netflix.asgard.SecretService
 import com.netflix.asgard.ServerService
 import com.netflix.asgard.SimpleDbDomainService
 import com.netflix.asgard.StackService
@@ -133,7 +132,8 @@ class Mocks {
                             ],
                             email: [:],
                             grails: [
-                                    awsAccountNames: [(TEST_AWS_ACCOUNT_ID): 'test', (PROD_AWS_ACCOUNT_ID): 'prod', (SEG_AWS_ACCOUNT_ID): 'seg'],
+                                    awsAccountNames: [(TEST_AWS_ACCOUNT_ID): 'test', (PROD_AWS_ACCOUNT_ID): 'prod',
+                                            (SEG_AWS_ACCOUNT_ID): 'seg'],
                                     awsAccounts: [TEST_AWS_ACCOUNT_ID, PROD_AWS_ACCOUNT_ID]
                             ],
                             promote: [
@@ -190,7 +190,9 @@ class Mocks {
             namesToApps = namesToApps.asImmutable()
 
             applicationService.metaClass.getRegisteredApplications = { UserContext userContext -> apps }
-            applicationService.metaClass.getRegisteredApplication = { UserContext userContext, String name -> namesToApps[name] }
+            applicationService.metaClass.getRegisteredApplication = { UserContext userContext, String name ->
+                namesToApps[name]
+            }
 
             applicationService.afterPropertiesSet()
             applicationService.initializeCaches()
@@ -272,7 +274,9 @@ class Mocks {
             discoveryService.eurekaAddressCollectorService = eurekaAddressCollectorService()
             discoveryService.configService = configService()
             discoveryService.taskService = taskService()
-            discoveryService.metaClass.getAppInstancesByIds = { UserContext userContext, List<String> instanceIds -> [] }
+            discoveryService.metaClass.getAppInstancesByIds = { UserContext userContext, List<String> instanceIds ->
+                []
+            }
             discoveryService.initializeCaches()
         }
         discoveryService
@@ -325,8 +329,6 @@ class Mocks {
         if (awsClientService == null) {
             MockUtils.mockLogging(AwsClientService, false)
             awsClientService = new AwsClientService()
-            awsClientService.grailsApplication = grailsApplication()
-            awsClientService.secretService = new SecretService()
             awsClientService.configService = configService()
             awsClientService.serverService = serverService()
             awsClientService.afterPropertiesSet()

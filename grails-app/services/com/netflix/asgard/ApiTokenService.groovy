@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.netflix.asgard
 
 import com.google.common.cache.Cache
@@ -30,7 +29,6 @@ class ApiTokenService implements InitializingBean {
 
     def configService
     def emailerService
-    def secretService
 
     /**
      * Time based expiring cache of tokens that have triggered an email alert. This allows only one alert to be sent out
@@ -46,13 +44,13 @@ class ApiTokenService implements InitializingBean {
     }
 
     /**
-     * Checks if an API token is valid for any of the encryption keys specified in {@link SecretService}.
+     * Checks if an API token is valid for any of the encryption keys.
      *
-     * @param apiToken A token object to check.
+     * @param apiToken A token object to check
      * @return true if the token is valid for any of the encryption keys, false otherwise.
      */
     boolean tokenValid(ApiToken apiToken) {
-        secretService.apiEncryptionKeys.find { String encryptionKey -> apiToken.isValid(encryptionKey) } != null
+        configService.apiEncryptionKeys.find { String encryptionKey -> apiToken.isValid(encryptionKey) } != null
     }
 
     /**

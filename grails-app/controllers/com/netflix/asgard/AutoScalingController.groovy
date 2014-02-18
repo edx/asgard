@@ -287,14 +287,14 @@ class AutoScalingController {
 
     def save = { GroupCreateCommand cmd ->
         if (cmd.hasErrors()) {
-            chain(action: 'create', model: [cmd:cmd], params: params) // Use chain to pass both the errors and params
+            chain(action: 'create', model: [cmd: cmd], params: params) // Use chain to pass both the errors and params
         } else {
             UserContext userContext = UserContext.of(request)
             // Auto Scaling Group name
             String groupName = Relationships.buildGroupName(params)
             Subnets subnets = awsEc2Service.getSubnets(userContext)
             String subnetPurpose = params.subnetPurpose ?: null
-            String vpcId = subnets.mapPurposeToVpcId()[subnetPurpose] ?: ''
+            String vpcId = subnets.getVpcIdForSubnetPurpose(subnetPurpose) ?: ''
 
             // Auto Scaling Group
             Integer minSize = (params.min ?: 0) as Integer

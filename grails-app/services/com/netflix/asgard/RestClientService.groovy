@@ -18,11 +18,13 @@ package com.netflix.asgard
 import grails.converters.JSON
 import grails.converters.XML
 import groovy.util.slurpersupport.GPathResult
+import java.security.KeyStore
 import java.security.Security
 import java.util.concurrent.TimeUnit
 import org.apache.http.HttpEntity
 import org.apache.http.HttpHost
 import org.apache.http.HttpResponse
+import org.apache.http.NameValuePair
 import org.apache.http.client.HttpClient
 import org.apache.http.client.entity.UrlEncodedFormEntity
 import org.apache.http.client.methods.HttpDelete
@@ -32,6 +34,8 @@ import org.apache.http.client.methods.HttpPut
 import org.apache.http.client.methods.HttpUriRequest
 import org.apache.http.client.params.ClientPNames
 import org.apache.http.conn.params.ConnRoutePNames
+import org.apache.http.conn.scheme.Scheme
+import org.apache.http.conn.ssl.SSLSocketFactory
 import org.apache.http.entity.StringEntity
 import org.apache.http.impl.client.AutoRetryHttpClient
 import org.apache.http.impl.client.DefaultHttpClient
@@ -164,6 +168,27 @@ class RestClientService implements InitializingBean {
     }
 
     /**
+     * Posts to the URI with a Map of name-value pairs.
+     *
+     * @param uriPath the remote destination
+     * @param nameValuePairs the name-value pairs to pass in the post body
+     * @return int the HTTP response code
+     */
+    RestResponse postAsNameValuePairs(String uriPath, Map<String, String> nameValuePairs) {
+        HttpPost httpPost = new HttpPost(uriPath)
+        if (nameValuePairs) {
+            List<NameValuePair> data = nameValuePairs.collect { new BasicNameValuePair(it.key, it.value) }
+            httpPost.setEntity(new UrlEncodedFormEntity(data))
+        }
+        executeAndProcessResponse(httpPost) {
+            logErrors(httpPost, it)
+            int statusCode = it.statusLine.statusCode
+            String content = it.entity.content.getText()
+            new RestResponse(statusCode, content)
+        }
+    }
+
+    /**
      * @param uriPath the remote destination
      * @param query the name-value pairs to pass in the post body
      * @return int the HTTP response code
@@ -267,4 +292,29 @@ class RestClientService implements InitializingBean {
         return responseCode
     }
 
+    /**
+     * Gets a REST response body from an HTTPS destination, using an SSL key store, probably read from the local disk.
+     *
+     * @param keyStoreInputStream the stream containing the SSL key store
+     * @param keyStorePassword the password for the SSL key store
+     * @param port the port to connect on
+     * @param endpoint the HTTPS endpoint to call
+     * @return the response body
+     */
+    String getWithSsl(InputStream keyStoreInputStream, String keyStorePassword, Integer port, String endpoint) {
+
+        KeyStore jks = KeyStore.getInstance('JKS')
+        jks.load(keyStoreInputStream, keyStorePassword.toCharArray())
+        SSLSocketFactory socketFactory = new SSLSocketFactory(SSLSocketFactory.TLS, jks, keyStorePassword, jks, null,
+                null, SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER)
+        Scheme scheme = new Scheme('https', port, socketFactory)
+
+        // Resembles global shared state. When we get more variety of HTTPS use cases, we might want to rethink this.
+        httpClient.connectionManager.schemeRegistry.register(scheme)
+
+        String response = executeAndProcessResponse(new HttpGet(endpoint), { HttpResponse httpResponse ->
+            EntityUtils.toString(httpResponse.entity)
+        }) as String
+        response
+    }
 }

@@ -13,9 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import com.netflix.asgard.model.HardwareProfile
 import com.netflix.asgard.model.InstanceTypeData
 import org.apache.log4j.DailyRollingFileAppender
+import org.apache.log4j.Level
 
 // http://grails.org/doc/latest/guide/3.%20Configuration.html#3.1.2 Logging
 log4j = {
@@ -32,12 +34,20 @@ log4j = {
 
         rollingFile name: "stacktrace", maxFileSize: 1024,
                 file: "${logDirectory}/stacktrace.log"
+				
+		rollingFile name: "taskLog",
+				file: "${logDirectory}/tasklog.log",
+				immediateFlush:'true', 
+				threshold:org.apache.log4j.Level.INFO
     }
 
     root {
         info 'asgardrolling'
     }
 
+	// Log task output to a separate file for auditing.
+	info taskLog:"com.netflix.asgard.Task"
+	
     // Set level for all application artifacts
     info 'grails.app'
 
@@ -66,6 +76,9 @@ log4j = {
     error 'com.amazonaws', 'grails.spring', 'net.sf.ehcache', 'org.springframework', 'org.hibernate',
             'org.apache.catalina', 'org.apache.commons', 'org.apache.coyote', 'org.apache.http.client.protocol',
             'org.apache.jasper', 'org.apache.tomcat', 'org.codehaus.groovy.grails'
+
+    // Avoid odd extra log4j error message during grails test-app initialization
+    error 'com.amazonaws.services.simpleworkflow.flow.worker.DecisionTaskPoller'
 
     environments {
         development {
@@ -173,14 +186,20 @@ server {
 environments {
     development {
         server.online = !System.getProperty('offline')
-        if (!server.online) { println 'Config: working offline' }
+        if (!server.online) {
+            println 'Config: working offline'
+        }
         plugin {
             refreshDelay = 5000
         }
         workflow.taskList = "asgard_${System.getProperty('user.name')}"
     }
     test {
-        server.online = false
+        if (System.getProperty('regressionSuite') == 'true') {
+            server.online = true
+        } else {
+            server.online = false
+        }
     }
     production {
         cloud {
