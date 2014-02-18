@@ -19,7 +19,6 @@ import com.amazonaws.services.autoscaling.model.ScheduledUpdateGroupAction
 import com.amazonaws.services.autoscaling.model.TagDescription;
 import com.netflix.asgard.TagNames;
 import com.netflix.asgard.model.ScalingPolicyData
-import com.netflix.asgard.model.TagData;
 
 import groovy.transform.Immutable
 
