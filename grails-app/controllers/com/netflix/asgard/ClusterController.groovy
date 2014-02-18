@@ -421,8 +421,16 @@ ${lastGroup.loadBalancerNames}"""
             List<ScheduledUpdateGroupAction> newScheduledActions = awsAutoScalingService.copyScheduledActionsForNewAsg(
                     userContext, nextGroupName, lastScheduledActions)
 
-			List<TagDescription> tags = lastGroup.tags
+			List<TagDescription> tags = lastGroup.tags			
+			List<TagDescription> filteredTags = []
 			
+			// TODO: clean up, filtering closures do not work on Java classes, this is from Google collections.
+			for (tag in tags) {
+				if (! tag.key.startsWith("aws")) {
+					filteredTags.add(it)
+				}
+			}
+		
             Integer lastGracePeriod = lastGroup.healthCheckGracePeriod
             String vpcZoneIdentifier = subnets.constructNewVpcZoneIdentifierForPurposeAndZones(subnetPurpose,
                     selectedZones)
@@ -475,7 +483,7 @@ Group: ${loadBalancerNames}"""
                     vpcZoneIdentifier: vpcZoneIdentifier,
                     spotPrice: spotPrice,
                     ebsOptimized: ebsOptimized,
-                    tags: tags
+                    tags: filteredTags
             )
             def operation = pushService.startGroupCreate(options)
             flash.message = "${operation.task.name} has been started."
