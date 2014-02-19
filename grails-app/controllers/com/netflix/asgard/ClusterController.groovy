@@ -321,7 +321,7 @@ ${lastGroup.loadBalancerNames}"""
 			// TODO: clean up, filtering closures do not work on Java classes, this is from Google collections.
 			for (tag in tags) {
 				if (! tag.key.startsWith("aws")) {
-					filteredTags.add(it)
+					filteredTags.add(tag)
 				}
 			}
 		
