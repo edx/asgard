@@ -25,6 +25,7 @@
   <link rel="stylesheet" href="${resource(dir: 'css', file: 'main.css')}?v=${build}"/>
   <link rel="stylesheet" href="${resource(dir: 'css', file: 'animate.css')}?v=${build}"/>
   <link rel="stylesheet" href="${resource(dir: 'css', file: 'scoped-twbs.min.css')}?v=${build}"/>
+  <link rel="stylesheet" href="${resource(dir: 'edx', file: 'edx-asgard.css')}?v=${build}"/>
   <link rel="stylesheet" href="${resource(dir: 'js/select2-3.2', file: 'select2.css')}?v=${build}"/>
   <!--[if IE]>
     <link rel="stylesheet" href="${resource(dir: 'css', file: 'ie.css')}?v=${build}"/>
@@ -152,9 +153,7 @@
 	       </ul>
 	     </li>
     </shiro:hasAnyRole>
-    <shiro:hasAnyRole in="['task']">
         <li class="menuButton"><g:link class="tasks" controller="task" action="list">Task</g:link></li>
-    </shiro:hasAnyRole>
    </ul>
   </g:if>
   <div class="clear"></div>
