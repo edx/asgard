@@ -112,6 +112,9 @@ ol {
   margin: 0;
 }
 
+.nav ul {
+	margin: 0;
+}
 
 .nav li {
   padding: 0 15px;
@@ -184,7 +187,9 @@ th.buttons {
 }
 
 .buttons a,
-.buttons button {
+.buttons button, 
+.buttons .pushRolling,
+.buttons .pushReplace {
   transition: color 0.25s ease-in-out 0s, background 0.25s ease-in-out 0s, box-shadow 0.25s ease-in-out 0s;
   box-shadow: 0 2px 1px 0 #0A4A67;
   margin: 5px;
@@ -192,6 +197,11 @@ th.buttons {
   background: none repeat scroll 0 0 #126F9A;
   padding: 6px;
   color: #FFFFFF;
+}
+
+.buttons .pushRolling,
+.buttons .pushReplace {
+	padding: 12px;
 }
 
 .buttons a,
@@ -278,6 +288,29 @@ a.resize {
   box-shadow: 0 2px 1px 0 #8C393F;
 }
 
+.buttons a.edit,
+.buttons button.edit div {
+  background: none;
+  padding: 12px 12px 12px 35px;
+}
+
+.buttons a.edit,
+.buttons button.edit {
+  background-image: url('icomoon/pencil.svg');
+  background-repeat: no-repeat;
+  background-position: 10px center;
+  background-color: #126F9A;
+  box-shadow: 0 2px 1px 0 #ddd;
+  color: #FFFFFF;
+}
+
+.buttons a.edit:hover,
+.buttons button.edit:hover {
+  background-color: #1790C7 !important;
+  color: #FFFFFF;
+}
+
+
 
 .buttons button.trafficEnable div,
 .buttons button.trafficDisable div {
@@ -318,4 +351,6 @@ a.resize {
   background-color: #CD1A19 !important;
   box-shadow: 0 2px 1px 0 #8C393F;
 }
+
+
 
