@@ -54,6 +54,7 @@ import com.amazonaws.services.ec2.model.Image
 import com.amazonaws.services.ec2.model.SecurityGroup
 import com.amazonaws.services.elasticloadbalancing.model.LoadBalancerDescription
 import com.google.common.collect.ImmutableSet
+import com.netflix.asgard.ConfigService.BlockDeviceStrategy
 import com.netflix.asgard.cache.CacheInitializer
 import com.netflix.asgard.model.AlarmData
 import com.netflix.asgard.model.ApplicationInstance
@@ -71,7 +72,9 @@ import com.netflix.asgard.push.AsgDeletionMode
 import com.netflix.asgard.push.Cluster
 import com.netflix.asgard.retriever.AwsResultsRetriever
 import com.netflix.frigga.ami.AppVersion
+
 import groovyx.gpars.GParsExecutorsPool
+
 import org.joda.time.DateTime
 import org.joda.time.Duration
 import org.springframework.beans.factory.InitializingBean
@@ -1222,7 +1225,11 @@ class AwsAutoScalingService implements CacheInitializer, InitializingBean {
         Check.notNull(launchConfiguration.keyName, LaunchConfiguration, "keyName")
         Check.notNull(launchConfiguration.instanceType, LaunchConfiguration, "instanceType")
         taskService.runTask(userContext, "Create Launch Configuration '${name}' with image '${imageId}'", { Task task ->
-            launchConfiguration.blockDeviceMappings = buildBlockDeviceMappings(launchConfiguration.instanceType)
+
+            // In not true fall through and use the values in the provided LaunchConfigurationBeanOptions
+            if ( BlockDeviceStrategy.CONFIG == configService.getLaunchConfigBlockDeviceStrategy() ) {
+                launchConfiguration.blockDeviceMappings = buildBlockDeviceMappings(launchConfiguration.instanceType)
+            }
             awsClient.by(userContext.region).createLaunchConfiguration(launchConfiguration.
                     getCreateLaunchConfigurationRequest(userContext, spotInstanceRequestService))
             pushService.addAccountsForImage(userContext, imageId, task)
