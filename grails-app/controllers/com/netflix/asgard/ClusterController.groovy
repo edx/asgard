@@ -16,6 +16,8 @@
 package com.netflix.asgard
 
 import com.amazonaws.services.autoscaling.model.AutoScalingGroup
+import com.amazonaws.services.autoscaling.model.InstanceMonitoring
+import com.amazonaws.services.autoscaling.model.BlockDeviceMapping
 import com.amazonaws.services.autoscaling.model.LaunchConfiguration
 import com.amazonaws.services.autoscaling.model.ScheduledUpdateGroupAction
 import com.amazonaws.services.autoscaling.model.TagDescription;
@@ -264,6 +266,12 @@ ${loadBalancerNames}"""
 Group: ${lastGroup.loadBalancerNames}"""
             boolean ebsOptimized = params.containsKey('ebsOptimized') ? params.ebsOptimized?.toBoolean() :
                 lastLaunchConfig.ebsOptimized
+<<<<<<< HEAD
+=======
+
+            Collection<BlockDeviceMapping> blockDeviceMappings = lastLaunchConfig.blockDeviceMappings
+
+>>>>>>> 30b1988... fixing merge conflicts
             if (params.noOptionalDefaults != 'true') {
                 securityGroups = securityGroups ?: lastLaunchConfig.securityGroups
                 termPolicies = termPolicies ?: lastGroup.terminationPolicies
@@ -306,6 +314,7 @@ Group: ${loadBalancerNames}"""
                     spotPrice: spotPrice,
                     ebsOptimized: ebsOptimized,
                     tags: filteredTags
+                    blockDeviceMappings: blockDeviceMappings
             )
             def operation = pushService.startGroupCreate(options)
             flash.message = "${operation.task.name} has been started."

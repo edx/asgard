@@ -1059,4 +1059,10 @@ grailsApplication.config.cloud?.asgAnalyzerBaseUrl ?: ''
         grailsApplication.config.auth?.google?.openid?.return_to ?: "http://localhost:8080"				
     }
 
+    enum BlockDeviceStrategy { CONFIG, COPY }
+
+    BlockDeviceStrategy getLaunchConfigBlockDeviceStrategy() {
+        String strategy = grailsApplication.config.cloud?.launchConfig?.blockDeviceStrategy ?: 'CONFIG'
+        BlockDeviceStrategy.valueOf(strategy)
+    }
 }
