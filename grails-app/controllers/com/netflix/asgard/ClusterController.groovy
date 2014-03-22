@@ -385,7 +385,7 @@ Group: ${loadBalancerNames}"""
                     vpcZoneIdentifier: vpcZoneIdentifier,
                     spotPrice: spotPrice,
                     ebsOptimized: ebsOptimized,
-                    tags: filteredTags
+                    tags: filteredTags,
                     blockDeviceMappings: blockDeviceMappings
             )
             def operation = pushService.startGroupCreate(options)
