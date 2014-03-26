@@ -317,16 +317,16 @@ ${lastGroup.loadBalancerNames}"""
             List<ScheduledUpdateGroupAction> newScheduledActions = awsAutoScalingService.copyScheduledActionsForNewAsg(
                     userContext, nextGroupName, lastScheduledActions)
 
-			List<TagDescription> tags = lastGroup.tags			
-			List<TagDescription> filteredTags = []
-			
-			// TODO: clean up, filtering closures do not work on Java classes, this is from Google collections.
-			for (tag in tags) {
-				if (! tag.key.startsWith("aws")) {
-					filteredTags.add(tag)
-				}
-			}
-		
+            List<TagDescription> tags = lastGroup.tags
+            List<TagDescription> filteredTags = []
+
+            // TODO: clean up, filtering closures do not work on Java classes, this is from Google collections.
+            for (tag in tags) {
+                if (! tag.key.startsWith("aws")) {
+                    filteredTags.add(tag)
+            	}
+            }
+
             Integer lastGracePeriod = lastGroup.healthCheckGracePeriod
             String vpcZoneIdentifier = subnets.constructNewVpcZoneIdentifierForPurposeAndZones(subnetPurpose,
                     selectedZones)
@@ -338,12 +338,7 @@ ${loadBalancerNames}"""
 Group: ${lastGroup.loadBalancerNames}"""
             boolean ebsOptimized = params.containsKey('ebsOptimized') ? params.ebsOptimized?.toBoolean() :
                 lastLaunchConfig.ebsOptimized
-<<<<<<< HEAD
-=======
-
             Collection<BlockDeviceMapping> blockDeviceMappings = lastLaunchConfig.blockDeviceMappings
-
->>>>>>> 30b1988... fixing merge conflicts
             if (params.noOptionalDefaults != 'true') {
                 securityGroups = securityGroups ?: lastLaunchConfig.securityGroups
                 termPolicies = termPolicies ?: lastGroup.terminationPolicies
