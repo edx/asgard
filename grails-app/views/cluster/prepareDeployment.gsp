@@ -216,7 +216,7 @@
                 <label for="trafficAllowed">Enable traffic?</label>
               </td>
               <td>
-                <input id="trafficAllowed" type="checkbox" name="trafficAllowed" checked="checked" />
+                <input id="trafficAllowed" type="checkbox" name="trafficAllowed" />
                 <label for="trafficAllowed">Send client requests to new instances</label>
               </td>
             </tr>

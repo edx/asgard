@@ -32,9 +32,10 @@ class ObjectLinkTagLib extends ApplicationTagLib {
         attrs.params = attrs.params ?: [id: objectId]
         def compact = attrs.compact ? attrs.remove('compact') : null
         attrs.title = attrs.title ?: compact ? "${objectId} ${type.displayName}" : type.linkPurpose
-        attrs['class'] = type.name()
+        // bit of a hack to support different css classes in list pages and elsewhere.
+        attrs['class'] = attrs['class'] ?: type.name()
         attrs.controller = type.name()
-        String displayName = body() ?: objectId
+        String displayName = body() + " " + objectId
 
         String linkText = compact ? '' : displayName
         def writer = getOut()

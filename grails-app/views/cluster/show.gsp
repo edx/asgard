@@ -26,6 +26,7 @@
   <div class="body cluster">
     <div class="intro">
       <h1>Manage Cluster of Sequential Auto Scaling Groups</h1>
+      <h2 class="${ cluster.name.contains("test")?'prod':'test' }">${cluster.name}</h2>
       <g:if test="${flash.message}">
         <div class="message">${flash.message}</div>
       </g:if>
@@ -77,8 +78,11 @@
               <div class="expiration">Expires in ${autoScalingGroup.expirationDurationString}</div>
             </g:if>
             <g:if test="${autoScalingGroup.suspendedPrimaryProcessTypes}">
-              <div class="suspendProcess">${autoScalingGroup.suspendedPrimaryProcessTypes.join(' and ')} ${autoScalingGroup.suspendedPrimaryProcessTypes.size() == 1 ? 'is' : 'are'} disabled</div>
+              <div class="suspendProcess">Out of service</div>
             </g:if>
+            <g:else>
+               <div class="runProcess">In service</div>
+            </g:else>
             <g:if test="${autoScalingGroup.deleteInProgress}">
               <div class="deleting">${autoScalingGroup.status}</div>
             </g:if>
@@ -179,7 +183,7 @@
                     <label for="trafficAllowed">Enable traffic?</label>
                   </td>
                   <td>
-                    <input id="trafficAllowed" type="checkbox" name="trafficAllowed" checked="checked" />
+                    <input id="trafficAllowed" type="checkbox" name="trafficAllowed" />
                     <label for="trafficAllowed">Send client requests to new instances</label>
                   </td>
                 </tr>
