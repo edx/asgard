@@ -33,7 +33,7 @@
         <div class="buttons">
           <g:buttonSubmit class="stop" value="Terminate Instance(s)" action="terminate"
                           data-warning="Really terminate instance(s)?"/>
-          <g:link class="clean" action="audit">Audit Ungrouped Instances</g:link>
+          <g:buttonSubmit class="clean" action="audit">Audit Ungrouped Instances</g:buttonSubmit>
         </div>
       </g:render>
       <footer/>
