@@ -35,3 +35,7 @@ app/bower_components
 web-app/scripts
 web-app/views
 coverage
+CodeNarc-Report.*
+cobertura.ser
+.gradle
+/bin
