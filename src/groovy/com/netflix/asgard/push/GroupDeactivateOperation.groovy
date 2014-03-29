@@ -24,7 +24,9 @@ import com.netflix.asgard.Task
 import com.netflix.asgard.Time
 import com.netflix.asgard.UserContext
 import com.netflix.asgard.model.AutoScalingProcessType
+
 import org.apache.commons.logging.LogFactory
+import org.edx.asgard.NewrelicService
 import org.joda.time.Duration
 
 /**
@@ -36,6 +38,7 @@ class GroupDeactivateOperation extends AbstractPushOperation {
 
     def configService
     def discoveryService
+    NewrelicService newrelicService
     UserContext userContext
     String autoScalingGroupName
 
@@ -60,7 +63,7 @@ class GroupDeactivateOperation extends AbstractPushOperation {
             task.email = applicationService.getEmailFromApp(userContext, appName)
 
             AutoScalingGroup group = checkGroupStillExists(userContext, autoScalingGroupName)
-
+            newrelicService.notifyOfAsgDeactivate(userContext, group)
             // Ensure processes are disabled to avoid accidental launches and terminations while traffic should be off.
             final Set<AutoScalingProcessType> suspendProcessTypes = AutoScalingProcessType.getDisableProcesses() -
                     group.suspendedProcesses

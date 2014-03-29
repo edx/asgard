@@ -67,7 +67,7 @@ class AppRegistrationSpec extends Specification {
         ]
     }
 
-    class ItemBuilder {
+    static class ItemBuilder {
         private ItemBuilder() { }
 
         static class Builder {
