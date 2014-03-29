@@ -25,7 +25,9 @@ import com.netflix.asgard.Task
 import com.netflix.asgard.Time
 import com.netflix.asgard.UserContext
 import com.netflix.frigga.Names
+
 import org.apache.commons.logging.LogFactory
+import org.edx.asgard.NewrelicService
 import org.joda.time.DateTime
 import org.joda.time.Duration
 
@@ -35,6 +37,8 @@ import org.joda.time.Duration
  */
 class GroupDeleteOperation extends AbstractPushOperation {
     private static final log = LogFactory.getLog(this)
+    
+    NewrelicService newrelicService
 
     UserContext userContext
     AutoScalingGroup autoScalingGroup
@@ -62,6 +66,7 @@ class GroupDeleteOperation extends AbstractPushOperation {
             task.email = applicationService.getEmailFromApp(userContext, appName)
 
             AutoScalingGroup group = checkGroupStillExists(userContext, groupName)
+            newrelicService.notifyOfAsgDelete(userContext, group)
             List<String> oldLaunchConfigNames = awsAutoScalingService.getLaunchConfigurationNamesForAutoScalingGroup(
                 userContext, groupName).findAll { it != group.launchConfigurationName }
 
