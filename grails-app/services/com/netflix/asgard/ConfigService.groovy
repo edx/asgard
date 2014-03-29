@@ -900,4 +900,13 @@ class ConfigService {
         String strategy = grailsApplication.config.cloud?.launchConfig?.blockDeviceStrategy ?: 'CONFIG'
         BlockDeviceStrategy.valueOf(strategy)
     }
+
+    String getNewrelicApiKey() {
+        def foo = grailsApplication.config?.newrelic?.apiKey
+        grailsApplication.config?.newrelic?.apiKey ?: ""
+    }
+
+    String getNewrelicAppName() {
+        grailsApplication.config?.newrelic?.appName ?: ""
+    }
 }
