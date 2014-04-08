@@ -26,6 +26,7 @@ import com.netflix.asgard.UserContext
 import com.netflix.asgard.model.AutoScalingProcessType
 import org.apache.commons.logging.LogFactory
 import org.joda.time.Duration
+import org.edx.asgard.NewrelicService
 
 /**
  * A long running process that starts traffic to all instances of an auto scaling group.
@@ -35,6 +36,7 @@ class GroupActivateOperation extends AbstractPushOperation {
 
     def configService
     def discoveryService
+    NewrelicService newrelicService
     UserContext userContext
     String autoScalingGroupName
 
@@ -58,6 +60,7 @@ class GroupActivateOperation extends AbstractPushOperation {
             task.email = applicationService.getEmailFromApp(userContext, appName)
 
             AutoScalingGroup group = checkGroupStillExists(userContext, autoScalingGroupName)
+            newrelicService.notifyOfAsgActivate(userContext, group)
             awsAutoScalingService.removeExpirationTime(userContext, autoScalingGroupName, task)
 
             // Ensure processes are enabled, since it was probably disabled when the ASG got "deactivated".

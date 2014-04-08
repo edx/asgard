@@ -29,7 +29,9 @@ import com.netflix.asgard.UserContext
 import com.netflix.asgard.model.ApplicationInstance
 import com.netflix.asgard.model.AutoScalingGroupData
 import com.netflix.asgard.model.AutoScalingProcessType
+
 import org.apache.commons.logging.LogFactory
+import org.edx.asgard.NewrelicService
 import org.joda.time.DateTime
 import org.joda.time.Duration
 
@@ -52,6 +54,7 @@ class GroupResizeOperation extends AbstractPushOperation {
     def discoveryService
     def flagService
     def restClientService
+    NewrelicService newrelicService
 
     UserContext userContext
     String autoScalingGroupName
@@ -115,6 +118,7 @@ class GroupResizeOperation extends AbstractPushOperation {
         while (true) {
             lastBatchStartTime = Time.now()
             AutoScalingGroup group = awsAutoScalingService.getAutoScalingGroup(userContext, autoScalingGroupName)
+            newrelicService.notifyOfAsgResize(userContext, group)
             if (!group) {
                 throw new PushException("Auto scaling group '${group}' does not exist")
             }

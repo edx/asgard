@@ -61,6 +61,7 @@ class ClusterController {
     def pushService
     def spotInstanceRequestService
     def taskService
+    def newrelicService
 
     def index() {
         redirect(action: 'list', params: params)
