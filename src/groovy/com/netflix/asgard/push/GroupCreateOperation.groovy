@@ -124,7 +124,7 @@ ${groupTemplate.loadBalancerNames} and result ${result}"""
                         awsAutoScalingService.suspendProcess(userContext, it, options.common.groupName, task)
                     }
                 }
-                newrelicService.notifyOfDeployment(options.common.userContext,
+                newrelicService.notifyOfAsgCreate(options.common.userContext,
                     awsAutoScalingService.getAutoScalingGroup(options.common.userContext,
                         result.autoScalingGroupName))
             } else {
