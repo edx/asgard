@@ -64,8 +64,7 @@ class GroupCreateOperation extends AbstractPushOperation {
         String clusterName = Relationships.clusterFromGroupName(options.common.groupName)
         String msg = "Creating auto scaling group '$options.common.groupName', " +
                 "min $options.minSize, max $options.maxSize, traffic ${options.initialTraffic.name().toLowerCase()}"
-        task = taskService.startTask(options.common.userContext, msg, { Task task ->
-            newrelicService.notifyOfDeployment(options)
+        task = taskService.startTask(options.common.userContext, msg, { Task task ->            
             task.email = applicationService.getEmailFromApp(options.common.userContext, options.common.appName)
             thisOperation.task = task
             task.log("Group '${options.common.groupName}' will start with 0 instances")
@@ -125,7 +124,9 @@ ${groupTemplate.loadBalancerNames} and result ${result}"""
                         awsAutoScalingService.suspendProcess(userContext, it, options.common.groupName, task)
                     }
                 }
-                //newrelicService.notifyOfDeployment(options)
+                newrelicService.notifyOfDeployment(options.common.userContext,
+                    awsAutoScalingService.getAutoScalingGroup(options.common.userContext,
+                        result.autoScalingGroupName))
             } else {
                 fail(result.toString())
             }

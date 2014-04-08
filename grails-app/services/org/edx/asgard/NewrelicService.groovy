@@ -35,8 +35,8 @@ class NewrelicService implements InitializingBean {
         log.error(servers)
     }
 
-    def notifyOfDeployment(GroupCreateOptions options) {
-        def deploymentDetails = ["deployment[app_name]":configService.getNewrelicAppName(), "deployment[revision]":"foo"]
+    def notifyOfDeployment(UserContext userContext, AutoScalingGroup asg) {
+        def deploymentDetails = getDeploymentDetails(userContext,asg)
         restClientService.postAsNameValuePairs("https://api.newrelic.com/deployments.xml", deploymentDetails, apiHeaders)
     }
     
@@ -57,18 +57,18 @@ class NewrelicService implements InitializingBean {
     
     }
     
-    private Map<String, String> getDeploymentDetails() {
-        def deploymentDetails = ["deployment[app_name]":configService.getNewrelicAppName(), "deployment[revision]":"foo"]
+    private Map<String, String> getDeploymentDetails(UserContext userContext, AutoScalingGroup asg) {
+        def deploymentDetails = ["deployment[app_name]":getApplicationIdentifier(asg), "deployment[revision]":getRevision(asg, userContext)]
     }
 
     private String getRevision(AutoScalingGroup asg,UserContext userContext) {
         LaunchConfiguration launchConfig = awsAutoScalingService.getLaunchConfiguration(userContext, asg.launchConfigurationName,
                     From.CACHE)
-            Image image = awsEc2Service.getImage(userContext, launchConfig.imageId, From.CACHE)
-            
-            def refTags = image.tags.findAll { it.key.endsWith("ref") }
-            
-            refTags.sort().join(",")
+        Image image = awsEc2Service.getImage(userContext, launchConfig.imageId, From.CACHE)
+
+        def refTags = image.tags.findAll { it.key.endsWith("ref") }
+        String foo = refTags.sort().join(",")
+        return foo
     }
     private String getApplicationIdentifier(AutoScalingGroup asg) {
         def environment =asg.tags.environment ?: 'none'
