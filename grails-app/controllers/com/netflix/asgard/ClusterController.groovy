@@ -70,7 +70,6 @@ class ClusterController {
     }
 
     def list() {
-        newrelicService.deleteNewrelicServerRef()
         UserContext userContext = UserContext.of(request)
         Collection<Cluster> clusterObjects = awsAutoScalingService.getClusters(userContext)
         Set<String> appNames = Requests.ensureList(params.id).collect { it.split(',') }.flatten() as Set<String>
