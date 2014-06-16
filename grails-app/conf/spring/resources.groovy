@@ -29,6 +29,7 @@ import com.netflix.asgard.SnsTaskFinishedListener
 import com.netflix.asgard.ThreadScheduler
 import com.netflix.asgard.auth.OneLoginAuthenticationProvider
 import com.netflix.asgard.auth.GoogleAppsOpenIdAuthenticationProvider
+import com.netflix.asgard.auth.GoogleOpenIdConnectAuthenticationProvider
 import com.netflix.asgard.auth.RestrictEditAuthorizationProvider
 import com.netflix.asgard.deployment.DeploymentActivitiesImpl
 import com.netflix.asgard.model.CsiScheduledAnalysisFactory
@@ -36,7 +37,7 @@ import groovy.io.FileType
 
 beans = {
     serviceInitLoggingBeanPostProcessor(ServiceInitLoggingBeanPostProcessor)
-
+    
     threadScheduler(ThreadScheduler, ref('configService'))
 
     List<Region> limitedRegions = Region.limitedRegions ?: Region.values()
@@ -73,12 +74,18 @@ beans = {
         }
     }
 
-	if (application.config.plugin?.authenticationProvider == 'googleAppsOpenIdAuthenticationProvider') {
-		googleAppsOpenIdAuthenticationProvider(GoogleAppsOpenIdAuthenticationProvider) { bean ->
-			bean.lazyInit = true
-		}
-	}
-	
+    if (application.config.plugin?.authenticationProvider == 'googleAppsOpenIdAuthenticationProvider') {
+        googleAppsOpenIdAuthenticationProvider(GoogleAppsOpenIdAuthenticationProvider) { bean ->
+            bean.lazyInit = true
+        }
+    }
+
+    if (application.config.plugin?.authenticationProvider == 'googleOpenIdConnectAuthenticationProvider') {
+        googleOpenIdConnectAuthenticationProvider(GoogleOpenIdConnectAuthenticationProvider) { bean ->
+            bean.lazyInit = true
+        }
+    }
+
     if (application.config.plugin?.advancedUserDataProvider == 'netflixAdvancedUserDataProvider') {
         netflixAdvancedUserDataProvider(NetflixAdvancedUserDataProvider) { bean ->
             bean.lazyInit = true
