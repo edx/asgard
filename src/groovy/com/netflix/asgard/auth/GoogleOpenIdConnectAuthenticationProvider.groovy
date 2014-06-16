@@ -60,9 +60,9 @@ class GoogleOpenIdConnectAuthenticationProvider implements AuthenticationProvide
 
 	@Override
 	public AsgardToken tokenFromRequest(HttpServletRequest request) {
-		// extract the parameters from the authentication response
-		// (which comes in as a HTTP request from the OpenID provider)
-		ParameterList openidResp = new ParameterList(request.getParameterMap())
+        // extract the parameters from the authentication response
+        // (which comes in as a HTTP request from the OpenID provider)
+        ParameterList openidResp = new ParameterList(request.getParameterMap())
 
         GrailsParameterMap paramMap = new GrailsParameterMap(request)
         HttpSession session = request.getSession()
@@ -73,8 +73,7 @@ class GoogleOpenIdConnectAuthenticationProvider implements AuthenticationProvide
         Verifier verifier = extractVerifier(provider, paramMap)
 
         if (!verifier) {
-            throw new Exception("no authenticated")
-            //return redirect(uri: provider.failureUri)
+            throw new Exception("not authenticated")
         }
 
         Token requestToken = (Token) session[oauthService.findSessionKeyForRequestToken(providerName)]
