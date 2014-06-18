@@ -270,7 +270,8 @@ a.resize {
 
 
 
-.buttons button.delete div {
+.buttons button.delete div,
+.subitems .buttons button.delete div {
   background: none;
   padding: 6px 6px 6px 25px;
 }
@@ -310,6 +311,158 @@ a.resize {
   color: #FFFFFF;
 }
 
+
+.buttons a.push,
+.buttons button.push div {
+  background: none;
+  padding: 12px 12px 12px 35px;
+}
+
+.buttons a.push,
+.buttons button.push {
+  background-image: url('icomoon/white/rocket.svg');
+  background-repeat: no-repeat;
+  background-position: 10px center;
+  background-color: #006C00;
+  box-shadow: 0 2px 1px 0 #ddd;
+  color: #FFFFFF;
+}
+
+.buttons a.push:hover,
+.buttons button.push:hover {
+  background-color: #60BC61 !important;
+  color: #FFFFFF;
+}
+
+.buttons a.cli,
+.buttons button.cli div {
+  background: none;
+  padding: 12px 12px 12px 35px;
+}
+
+.buttons a.cli,
+.buttons button.cli {
+  background-image: url('icomoon/white/console.svg');
+  background-repeat: no-repeat;
+  background-position: 10px center;
+  background-color: #006C00;
+  box-shadow: 0 2px 1px 0 #ddd;
+  color: #FFFFFF;
+}
+
+.buttons a.cli:hover,
+.buttons button.cli:hover {
+  background-color: #60BC61 !important;
+  color: #FFFFFF;
+}
+
+.buttons a.userData,
+.buttons button.userData div {
+  background: none;
+  padding: 12px 12px 12px 35px;
+}
+
+.buttons a.userData,
+.buttons button.userData {
+  background-image: url('icomoon/white/file.svg');
+  background-repeat: no-repeat;
+  background-position: 10px center;
+  background-color: #006C00;
+  box-shadow: 0 2px 1px 0 #ddd;
+  color: #FFFFFF;
+}
+
+.buttons a.userData:hover,
+.buttons button.userData:hover {
+  background-color: #60BC61 !important;
+  color: #FFFFFF;
+}
+
+.buttons a.attachElastic,
+.buttons button.attachElastic div {
+  background: none;
+  padding: 12px 12px 12px 35px;
+}
+
+.buttons a.attachElastic,
+.buttons button.attachElastic {
+  background-image: url('icomoon/white/link.svg');
+  background-repeat: no-repeat;
+  background-position: 10px center;
+  background-color: #006C00;
+  box-shadow: 0 2px 1px 0 #ddd;
+  color: #FFFFFF;
+}
+
+.buttons a.removeBalance,
+.buttons button.removeBalance div {
+  background: none;
+  padding: 6px 6px 6px 25px;
+}
+
+.buttons a.removeBalance,
+.buttons button.removeBalance {
+  background-image: url('icomoon/white/remove.svg');
+  background-repeat: no-repeat;
+  background-position: 10px center;
+  background-color: #006C00;
+  box-shadow: 0 2px 1px 0 #ddd;
+  color: #FFFFFF;
+}
+.buttons a.removeBalance:hover,
+.buttons button.removeBalance:hover {
+  background-color: #60BC61 !important;
+  color: #FFFFFF;
+}
+
+.buttons a.shutdown,
+.buttons button.shutdown div {
+  background: none;
+  padding: 6px 6px 6px 25px;
+}
+
+.buttons a.shutdown,
+.buttons button.shutdown {
+  background-image: url('icomoon/white/loop.svg');
+  background-repeat: no-repeat;
+  background-position: 10px center;
+  background-color: #006C00;
+  box-shadow: 0 2px 1px 0 #ddd;
+  color: #FFFFFF;
+}
+.buttons a.shutdown:hover,
+.buttons button.shutdown:hover {
+  background-color: #60BC61 !important;
+  color: #FFFFFF;
+}
+
+.buttons a.instanceBalance,
+.buttons button.instanceBalance div {
+  background: none;
+  padding: 6px 6px 6px 25px;
+}
+
+.buttons a.instanceBalance,
+.buttons button.instanceBalance {
+  background-image: url('icomoon/white/tree.svg');
+  background-repeat: no-repeat;
+  background-position: 10px center;
+  background-color: #006C00;
+  box-shadow: 0 2px 1px 0 #ddd;
+  color: #FFFFFF;
+}
+.buttons a.instanceBalance:hover,
+.buttons button.instanceBalance:hover {
+  background-color: #60BC61 !important;
+  color: #FFFFFF;
+}
+
+
+.buttons a.attachElastic:hover,
+.buttons button.attachElastic:hover {
+  background-color: #60BC61 !important;
+  color: #FFFFFF;
+}
 
 
 .buttons button.trafficEnable div,
