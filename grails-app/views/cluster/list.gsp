@@ -42,7 +42,7 @@
         <tbody>
         <g:each in="${clusters}" status="i" var="cluster">
           <tr class="${(i % 2) == 0 ? 'odd' : 'even'}">
-            <g:if test="${cluster.name.contains('test')}">
+            <g:if test="${cluster.name.startsWith('prod')}">
                 <td>
 	                <g:linkObject class="none" type="cluster" name="${cluster.name}" title="Production Cluster">
 	                    <img src="${resource(dir: 'edx/icomoon', file: 'rocket.svg')}"/>
