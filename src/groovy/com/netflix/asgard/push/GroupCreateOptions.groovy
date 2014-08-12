@@ -16,6 +16,7 @@
 package com.netflix.asgard.push
 
 import com.amazonaws.services.autoscaling.model.BlockDeviceMapping
+import com.amazonaws.services.autoscaling.model.LifecycleHook
 import com.amazonaws.services.autoscaling.model.ScheduledUpdateGroupAction
 import com.amazonaws.services.autoscaling.model.TagDescription;
 import com.netflix.asgard.TagNames;
@@ -43,6 +44,7 @@ import groovy.transform.Immutable
     String spotPrice
     boolean ebsOptimized
     Collection<BlockDeviceMapping> blockDeviceMappings
+    List<LifecycleHook> hooks
 
     /** The number of instances to create at a time while inflating the auto scaling group. */
     Integer batchSize

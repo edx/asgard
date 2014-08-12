@@ -19,6 +19,7 @@ import com.amazonaws.services.autoscaling.model.AutoScalingGroup
 import com.amazonaws.services.autoscaling.model.InstanceMonitoring
 import com.amazonaws.services.autoscaling.model.BlockDeviceMapping
 import com.amazonaws.services.autoscaling.model.LaunchConfiguration
+import com.amazonaws.services.autoscaling.model.LifecycleHook
 import com.amazonaws.services.autoscaling.model.ScheduledUpdateGroupAction
 import com.amazonaws.services.autoscaling.model.TagDescription;
 import com.amazonaws.services.ec2.model.AvailabilityZone
@@ -256,6 +257,8 @@ ${lastGroup.loadBalancerNames}"""
             	}
             }
 
+            List<LifecycleHook> hooks = awsAutoScalingService.getLifecycleHooks(userContext, lastGroup.autoScalingGroupName)
+            
             Integer lastGracePeriod = lastGroup.healthCheckGracePeriod
             String vpcZoneIdentifier = subnets.constructNewVpcZoneIdentifierForPurposeAndZones(subnetPurpose,
                     selectedZones)
@@ -310,7 +313,8 @@ Group: ${loadBalancerNames}"""
                     spotPrice: spotPrice,
                     ebsOptimized: ebsOptimized,
                     tags: filteredTags,
-                    blockDeviceMappings: blockDeviceMappings
+                    blockDeviceMappings: blockDeviceMappings,
+                    hooks: hooks
             )
             def operation = pushService.startGroupCreate(options)
             flash.message = "${operation.task.name} has been started."
