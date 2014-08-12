@@ -30,6 +30,8 @@ import com.amazonaws.services.autoscaling.model.DescribeAutoScalingGroupsRequest
 import com.amazonaws.services.autoscaling.model.DescribeAutoScalingGroupsResult
 import com.amazonaws.services.autoscaling.model.DescribeLaunchConfigurationsRequest
 import com.amazonaws.services.autoscaling.model.DescribeLaunchConfigurationsResult
+import com.amazonaws.services.autoscaling.model.DescribeLifecycleHooksRequest
+import com.amazonaws.services.autoscaling.model.DescribeLifecycleHooksResult;
 import com.amazonaws.services.autoscaling.model.DescribePoliciesRequest
 import com.amazonaws.services.autoscaling.model.DescribePoliciesResult
 import com.amazonaws.services.autoscaling.model.DescribeScalingActivitiesRequest
@@ -38,7 +40,10 @@ import com.amazonaws.services.autoscaling.model.DescribeScheduledActionsRequest
 import com.amazonaws.services.autoscaling.model.DescribeScheduledActionsResult
 import com.amazonaws.services.autoscaling.model.Instance
 import com.amazonaws.services.autoscaling.model.LaunchConfiguration
+import com.amazonaws.services.autoscaling.model.LifecycleHook
 import com.amazonaws.services.autoscaling.model.LifecycleState
+import com.amazonaws.services.autoscaling.model.PutLifecycleHookRequest;
+import com.amazonaws.services.autoscaling.model.PutLifecycleHookResult
 import com.amazonaws.services.autoscaling.model.PutScalingPolicyRequest
 import com.amazonaws.services.autoscaling.model.PutScalingPolicyResult
 import com.amazonaws.services.autoscaling.model.PutScheduledUpdateGroupActionRequest
@@ -1244,6 +1249,39 @@ class AwsAutoScalingService implements CacheInitializer, InitializingBean {
             awsClient.by(userContext.region).deleteLaunchConfiguration(request)
         }, Link.to(EntityType.launchConfiguration, name), existingTask)
         caches.allLaunchConfigurations.by(userContext.region).remove(name)
+    }
+    
+    List<LifecycleHook> getLifecycleHooks(UserContext userContext, String name) {
+        DescribeLifecycleHooksRequest describeLifecycleHooksRequest = new DescribeLifecycleHooksRequest()
+        .withAutoScalingGroupName(name)
+        DescribeLifecycleHooksResult result = awsClient.by(userContext.region).describeLifecycleHooks(describeLifecycleHooksRequest)
+        return result.getLifecycleHooks()
+    }
+    
+    def createLifecycleHooks(UserContext userContext, String asgName, List<LifecycleHook> hooks, Task existingTask = null) {
+        
+        if ( ! hooks ) {
+            return
+        }
+        Integer hookCount = hooks.size()
+        String msg = "Create ${hookCount} LifecycleHook${hookCount > 1 ? 's' : ''}"
+        
+        taskService.runTask(userContext,msg, { Task task ->
+            hooks.eachWithIndex {LifecycleHook hook, int hookIndex ->
+                PutLifecycleHookRequest request = new PutLifecycleHookRequest()
+                .withAutoScalingGroupName(asgName)
+                .withLifecycleHookName(hook.lifecycleHookName)
+                .withNotificationTargetARN(hook.notificationTargetARN)
+                .withRoleARN(hook.roleARN)
+                .withLifecycleTransition(hook.lifecycleTransition)
+
+                if (hookIndex > 1) { Time.sleepCancellably(configService.cloudThrottle) }
+                
+                task.log("Create LifecycleHook with ${request.lifecycleHookName}")
+                
+                final PutLifecycleHookResult result = awsClient.by(userContext.region).putLifecycleHook(request)
+            }
+        }, null, existingTask)
     }
 }
 
