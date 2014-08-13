@@ -31,7 +31,7 @@ import com.amazonaws.services.autoscaling.model.DescribeAutoScalingGroupsResult
 import com.amazonaws.services.autoscaling.model.DescribeLaunchConfigurationsRequest
 import com.amazonaws.services.autoscaling.model.DescribeLaunchConfigurationsResult
 import com.amazonaws.services.autoscaling.model.DescribeLifecycleHooksRequest
-import com.amazonaws.services.autoscaling.model.DescribeLifecycleHooksResult;
+import com.amazonaws.services.autoscaling.model.DescribeLifecycleHooksResult
 import com.amazonaws.services.autoscaling.model.DescribePoliciesRequest
 import com.amazonaws.services.autoscaling.model.DescribePoliciesResult
 import com.amazonaws.services.autoscaling.model.DescribeScalingActivitiesRequest
