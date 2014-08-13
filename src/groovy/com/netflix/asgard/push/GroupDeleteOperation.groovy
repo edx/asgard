@@ -37,7 +37,7 @@ import org.joda.time.Duration
  */
 class GroupDeleteOperation extends AbstractPushOperation {
     private static final log = LogFactory.getLog(this)
-    
+
     NewrelicService newrelicService
 
     UserContext userContext
@@ -68,7 +68,7 @@ class GroupDeleteOperation extends AbstractPushOperation {
             AutoScalingGroup group = checkGroupStillExists(userContext, groupName)
             newrelicService.notifyOfAsgDelete(userContext, group)
             List<String> oldLaunchConfigNames = awsAutoScalingService.getLaunchConfigurationNamesForAutoScalingGroup(
-                userContext, groupName).findAll { it != group.launchConfigurationName }
+                    userContext, groupName).findAll { it != group.launchConfigurationName }
 
             deregisterAllInstancesInAutoScalingGroupFromLoadBalancers()
             forceDeleteAutoScalingGroup()
@@ -106,7 +106,7 @@ class GroupDeleteOperation extends AbstractPushOperation {
                 asgStillExists = false
             } else if (new Duration(terminationStartTime, Time.now()).isLongerThan(MAX_TIME_FOR_DELETION)) {
                 throw new PushException("Timeout waiting ${Time.format(MAX_TIME_FOR_DELETION)} for auto scaling " +
-                        "group '${autoScalingGroup.autoScalingGroupName}' to disappear from AWS.")
+                "group '${autoScalingGroup.autoScalingGroupName}' to disappear from AWS.")
             }
         }
     }
