@@ -30,7 +30,7 @@ class ObjectLinkTagLibSpec extends Specification {
 
         then:
         output == '<a href="/instance/show/i-12345678" ' +
-                'title="Show details of this Instance" class="instance">aprop</a>'
+                'title="Show details of this Instance" class="instance">aprop i-12345678</a>'
     }
 
     def 'should generate fast property link'() {
@@ -40,7 +40,7 @@ class ObjectLinkTagLibSpec extends Specification {
 
         then:
         output == '<a href="/fastProperty/show?name=%7Cprop%3A8888" ' +
-                'title="Show details of this Fast Property" class="fastProperty">aprop</a>'
+                'title="Show details of this Fast Property" class="fastProperty">aprop |prop:8888</a>'
     }
 
     def 'should generate link for SQS subscription endpoint in same account'() {
@@ -60,7 +60,7 @@ class ObjectLinkTagLibSpec extends Specification {
                 'arn:aws:sqs:us-west-1:170000000001:testSQSWest'
         '<g:snsSubscriptionEndpoint>arn:aws:sqs:us-west-1:170000000000:testSQSWest</g:snsSubscriptionEndpoint>' |
                 '<a href="/queue/show/testSQSWest" region="us-west-1" title="Show details of this Queue" ' +
-                'class="queue">arn:aws:sqs:us-west-1:170000000000:testSQSWest</a>'
+                'class="queue">arn:aws:sqs:us-west-1:170000000000:testSQSWest testSQSWest</a>'
     }
 
     def 'should generate security group link with name and id displayed using duck typing of security object'() {
@@ -72,7 +72,7 @@ class ObjectLinkTagLibSpec extends Specification {
 
         then:
         output == '<a href="/security/show/sg-1234" title="Show details of this Security Group" ' +
-                'class="security">vampire (sg-1234)</a>'
+                'class="security">vampire (sg-1234) sg-1234</a>'
 
         where:
         input << [

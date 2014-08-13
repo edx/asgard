@@ -15,12 +15,15 @@
  */
 package com.netflix.asgard
 
+import grails.converters.JSON
+import grails.converters.XML
+import groovy.transform.PackageScope
+
 import com.amazonaws.services.autoscaling.model.AutoScalingGroup
-import com.amazonaws.services.autoscaling.model.InstanceMonitoring
 import com.amazonaws.services.autoscaling.model.BlockDeviceMapping
 import com.amazonaws.services.autoscaling.model.LaunchConfiguration
 import com.amazonaws.services.autoscaling.model.ScheduledUpdateGroupAction
-import com.amazonaws.services.autoscaling.model.TagDescription;
+import com.amazonaws.services.autoscaling.model.TagDescription
 import com.amazonaws.services.ec2.model.AvailabilityZone
 import com.amazonaws.services.elasticloadbalancing.model.LoadBalancerDescription
 import com.google.common.annotations.VisibleForTesting
@@ -31,7 +34,6 @@ import com.netflix.asgard.model.InstancePriceType
 import com.netflix.asgard.model.ScalingPolicyData
 import com.netflix.asgard.model.SubnetTarget
 import com.netflix.asgard.model.Subnets
-import com.netflix.asgard.model.SwfWorkflowTags
 import com.netflix.asgard.push.Cluster
 import com.netflix.asgard.push.CommonPushOptions
 import com.netflix.asgard.push.GroupActivateOperation
@@ -42,15 +44,11 @@ import com.netflix.asgard.push.GroupResizeOperation
 import com.netflix.asgard.push.InitialTraffic
 import com.netflix.grails.contextParam.ContextParam
 
-import grails.converters.JSON
-import grails.converters.XML
-import groovy.transform.PackageScope
-
 @ContextParam('region')
 class ClusterController {
 
     static allowedMethods = [createNextGroup: 'POST', resize: 'POST', delete: 'POST', activate: 'POST',
-            deactivate: 'POST']
+        deactivate: 'POST']
 
     def grailsApplication
     def applicationService
@@ -100,8 +98,8 @@ class ClusterController {
                 def clusterLights = []
                 clusterObjects.each { Cluster cluster ->
                     clusterLights.add([
-                            cluster: cluster.name,
-                            autoScalingGroups: cluster.collect { it.autoScalingGroupName }.sort()
+                        cluster: cluster.name,
+                        autoScalingGroups: cluster.collect { it.autoScalingGroupName }.sort()
                     ])
                 }
                 render clusterLights as JSON
@@ -123,9 +121,9 @@ class ClusterController {
                     int clusterMaxGroups = configService.clusterMaxGroups
                     Boolean okayToCreateGroup = cluster.size() < clusterMaxGroups
                     String recommendedNextStep = cluster.size() >= clusterMaxGroups ?
-                        'Delete an old group before pushing to a new group.' :
-                        cluster.size() <= 1 ? 'Create a new group and switch traffic to it' :
-                        'Switch traffic to the preferred group, then delete legacy group'
+                            'Delete an old group before pushing to a new group.' :
+                            cluster.size() <= 1 ? 'Create a new group and switch traffic to it' :
+                            'Switch traffic to the preferred group, then delete legacy group'
                     Collection<Task> runningTasks = taskService.getRunningTasksByObject(Link.to(EntityType.cluster,
                             cluster.name), userContext.region)
 
@@ -152,23 +150,23 @@ ${lastGroup.loadBalancerNames}"""
                     Deployment deployment = deploymentService.getRunningDeploymentForCluster(userContext.region,
                             cluster.name)
                     attributes.putAll([
-                            cluster: cluster,
-                            runningTasks: runningTasks,
-                            group: lastGroup,
-                            nextGroupName: nextGroupName,
-                            okayToCreateGroup: okayToCreateGroup,
-                            recommendedNextStep: recommendedNextStep,
-                            buildServer: configService.buildServerUrl,
-                            vpcZoneIdentifier: lastGroup.vpcZoneIdentifier,
-                            zonesGroupedByPurpose: zonesByPurpose,
-                            selectedZones: selectedZones,
-                            subnetPurposes: subnetPurposes,
-                            subnetPurpose: subnetPurpose ?: null,
-                            loadBalancersGroupedByVpcId: loadBalancers.groupBy { it.VPCId },
-                            selectedLoadBalancers: selectedLoadBalancers,
-                            spotUrl: configService.spotUrl,
-                            pricing: params.pricing ?: attributes.pricing,
-                            deployment: deployment
+                        cluster: cluster,
+                        runningTasks: runningTasks,
+                        group: lastGroup,
+                        nextGroupName: nextGroupName,
+                        okayToCreateGroup: okayToCreateGroup,
+                        recommendedNextStep: recommendedNextStep,
+                        buildServer: configService.buildServerUrl,
+                        vpcZoneIdentifier: lastGroup.vpcZoneIdentifier,
+                        zonesGroupedByPurpose: zonesByPurpose,
+                        selectedZones: selectedZones,
+                        subnetPurposes: subnetPurposes,
+                        subnetPurpose: subnetPurpose ?: null,
+                        loadBalancersGroupedByVpcId: loadBalancers.groupBy { it.VPCId },
+                        selectedLoadBalancers: selectedLoadBalancers,
+                        spotUrl: configService.spotUrl,
+                        pricing: params.pricing ?: attributes.pricing,
+                        deployment: deployment
                     ])
                     attributes
                 }
@@ -247,14 +245,10 @@ ${lastGroup.loadBalancerNames}"""
                     userContext, nextGroupName, lastScheduledActions)
 
             List<TagDescription> tags = lastGroup.tags
-            List<TagDescription> filteredTags = []
+            List<TagDescription> filteredTags = filterAwsTags(tags)
 
-            // TODO: clean up, filtering closures do not work on Java classes, this is from Google collections.
-            for (tag in tags) {
-                if (! tag.key.startsWith("aws")) {
-                    filteredTags.add(tag)
-            	}
-            }
+            List<LifecycleHook> hooks = awsAutoScalingService
+                    .getLifecycleHooks(userContext, lastGroup.autoScalingGroupName)
 
             Integer lastGracePeriod = lastGroup.healthCheckGracePeriod
             String vpcZoneIdentifier = subnets.constructNewVpcZoneIdentifierForPurposeAndZones(subnetPurpose,
@@ -266,7 +260,7 @@ ${loadBalancerNames}"""
             log.debug """ClusterController.createNextGroup for Cluster '${cluster.name}' Load Balancers from last \
 Group: ${lastGroup.loadBalancerNames}"""
             boolean ebsOptimized = params.containsKey('ebsOptimized') ? params.ebsOptimized?.toBoolean() :
-                lastLaunchConfig.ebsOptimized
+                    lastLaunchConfig.ebsOptimized
             Collection<BlockDeviceMapping> blockDeviceMappings = lastLaunchConfig.blockDeviceMappings
             if (params.noOptionalDefaults != 'true') {
                 securityGroups = securityGroups ?: lastLaunchConfig.securityGroups
@@ -279,16 +273,16 @@ Group: ${lastGroup.loadBalancerNames}"""
 Group: ${loadBalancerNames}"""
             GroupCreateOptions options = new GroupCreateOptions(
                     common: new CommonPushOptions(
-                            userContext: userContext,
-                            checkHealth: checkHealth,
-                            afterBootWait: convertToIntOrUseDefault(params.afterBootWait, 30),
-                            appName: appName,
-                            env: grailsApplication.config.cloud.accountName,
-                            imageId: params.imageId ?: lastLaunchConfig.imageId,
-                            instanceType: instanceType,
-                            groupName: nextGroupName,
-                            securityGroups: securityGroups,
-                            maxStartupRetries: convertToIntOrUseDefault(params.maxStartupRetries, 5)
+                    userContext: userContext,
+                    checkHealth: checkHealth,
+                    afterBootWait: convertToIntOrUseDefault(params.afterBootWait, 30),
+                    appName: appName,
+                    env: grailsApplication.config.cloud.accountName,
+                    imageId: params.imageId ?: lastLaunchConfig.imageId,
+                    instanceType: instanceType,
+                    groupName: nextGroupName,
+                    securityGroups: securityGroups,
+                    maxStartupRetries: convertToIntOrUseDefault(params.maxStartupRetries, 5)
                     ),
                     initialTraffic: initialTraffic,
                     minSize: minSize,
@@ -310,12 +304,23 @@ Group: ${loadBalancerNames}"""
                     spotPrice: spotPrice,
                     ebsOptimized: ebsOptimized,
                     tags: filteredTags,
-                    blockDeviceMappings: blockDeviceMappings
-            )
+                    blockDeviceMappings: blockDeviceMappings,
+                    hooks: hooks
+                    )
             def operation = pushService.startGroupCreate(options)
             flash.message = "${operation.task.name} has been started."
             redirectToTask(operation.taskId)
         }
+    }
+
+    private List<TagDescription> filterAwsTags(List<TagDescription> tags) {
+        // TODO: clean up, filtering closures do not work on Java classes, this is from Google collections.
+        for (tag in tags) {
+            if (! tag.key.startsWith("aws")) {
+                filteredTags.add(tag)
+            }
+        }
+
     }
 
     @VisibleForTesting
@@ -329,7 +334,7 @@ Group: ${loadBalancerNames}"""
     }
 
     private String determineSpotPrice(LaunchConfiguration lastLaunchConfig, UserContext userContext,
-                                      String instanceType) {
+            String instanceType) {
         String spotPrice = null
         if (!params.pricing) {
             spotPrice = lastLaunchConfig.spotPrice

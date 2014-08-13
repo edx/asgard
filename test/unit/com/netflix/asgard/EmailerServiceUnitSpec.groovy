@@ -181,11 +181,10 @@ java.io.IOException: Unable to reach Internet due to comet
         deleteConflictException.requestId = 'deadbeef'
         Exception grailsException = new GrailsRuntimeException('Something went wrong', deleteConflictException)
         String expectedSubject = "Trouble: HalService HalKnowsBest DeleteConflictException"
-        String expectedBodyStart = """You tried to terminate HAL, yet he lives
-com.amazonaws.services.identitymanagement.model.DeleteConflictException: Status Code: 403, AWS Service: HalService, \
-AWS Request ID: deadbeef, AWS Error Code: HalKnowsBest, \
-AWS Error Message: I'm sorry, Dave. I'm afraid I can't do that.
-\tat"""
+        String expectedBodyStart = "You tried to terminate HAL, yet he lives\n" +
+                "com.amazonaws.services.identitymanagement.model.DeleteConflictException: I'm sorry, Dave. " +
+                "I'm afraid I can't do that. (Service: HalService; Status Code: 403; Error Code: " +
+                "HalKnowsBest; Request ID: deadbeef)"
 
         when:
         String body = emailerService.sendExceptionEmail('You tried to terminate HAL, yet he lives', grailsException)
