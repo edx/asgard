@@ -17,6 +17,7 @@ package com.netflix.asgard.push
 
 import com.amazonaws.services.autoscaling.model.AutoScalingGroup
 import com.amazonaws.services.autoscaling.model.LaunchConfiguration
+import com.amazonaws.services.autoscaling.model.LifecycleHook
 import com.google.common.collect.Sets
 import com.netflix.asgard.CreateAutoScalingGroupResult
 import com.netflix.asgard.EntityType
@@ -39,6 +40,7 @@ class GroupCreateOperation extends AbstractPushOperation {
     def awsEc2Service
     def discoveryService
     def newrelicService
+    def awsClientService
     private final GroupCreateOptions options
     Task task
 
@@ -103,7 +105,10 @@ ${groupTemplate.loadBalancerNames} and result ${result}"""
                 // Add scalingPolicies to ASG. In the future this might need to be its own operation for reuse.
                 awsAutoScalingService.createScalingPolicies(options.common.userContext, options.scalingPolicies, task)
                 awsAutoScalingService.createScheduledActions(options.common.userContext, options.scheduledActions, task)
-
+                
+                awsAutoScalingService.createLifecycleHooks(options.common.userContext, options.common.groupName, options.hooks,task)
+    
+                
                 // If the user wanted any instances then start a resize operation.
                 if (options.minSize > 0 || options.desiredCapacity > 0) {
                     GroupResizeOperation operation = new GroupResizeOperation(userContext: options.common.userContext,
