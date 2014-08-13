@@ -315,13 +315,17 @@ Group: ${loadBalancerNames}"""
     }
 
     private List<TagDescription> filterAwsTags(List<TagDescription> tags) {
+        
+        List<TagDescription> filteredTags = []
+        
         // TODO: clean up, filtering closures do not work on Java classes, this is from Google collections.
         for (tag in tags) {
             if (! tag.key.startsWith("aws")) {
                 filteredTags.add(tag)
             }
         }
-
+        return filteredTags
+        
     }
 
     @VisibleForTesting
