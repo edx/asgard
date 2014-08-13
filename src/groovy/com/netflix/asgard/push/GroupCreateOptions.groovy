@@ -15,14 +15,13 @@
  */
 package com.netflix.asgard.push
 
+import groovy.transform.Immutable
+
 import com.amazonaws.services.autoscaling.model.BlockDeviceMapping
 import com.amazonaws.services.autoscaling.model.LifecycleHook
 import com.amazonaws.services.autoscaling.model.ScheduledUpdateGroupAction
-import com.amazonaws.services.autoscaling.model.TagDescription;
-import com.netflix.asgard.TagNames;
+import com.amazonaws.services.autoscaling.model.TagDescription
 import com.netflix.asgard.model.ScalingPolicyData
-
-import groovy.transform.Immutable
 
 @Immutable final class GroupCreateOptions {
     CommonPushOptions common
