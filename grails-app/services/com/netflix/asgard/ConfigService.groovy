@@ -1054,7 +1054,7 @@ class ConfigService {
     }
 
     /**
-     * @return the oauth redirect target 
+     * @return the oauth redirect target
      */
     String getGoogleAppsOauthReturnTo() {
         grailsApplication.config.auth?.google?.openid?.return_to ?: "http://localhost:8080"
