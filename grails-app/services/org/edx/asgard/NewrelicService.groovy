@@ -108,8 +108,12 @@ class NewrelicService implements InitializingBean {
             play = tagMap.get("play").getValue()
         }
 
-        //return "${environment}-${deployment}-${play}"
-        return "dev-worker"
+        if (play == "edxapp") {
+            play = play + "-lms"
+        }
+        
+        return "${environment}-${deployment}-${play}"
+
     }
 
 }
