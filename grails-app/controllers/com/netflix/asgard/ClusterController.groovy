@@ -251,8 +251,6 @@ ${lastGroup.loadBalancerNames}"""
             List<LifecycleHook> hooks = awsAutoScalingService
                     .getLifecycleHooks(userContext, lastGroup.autoScalingGroupName)
 
-            List<LifecycleHook> hooks = awsAutoScalingService.getLifecycleHooks(userContext, lastGroup.autoScalingGroupName)
-            
             Integer lastGracePeriod = lastGroup.healthCheckGracePeriod
             String vpcZoneIdentifier = subnets.constructNewVpcZoneIdentifierForPurposeAndZones(subnetPurpose,
                     selectedZones)
@@ -310,7 +308,6 @@ Group: ${loadBalancerNames}"""
                     blockDeviceMappings: blockDeviceMappings,
                     hooks: hooks
             )
-                    )
             def operation = pushService.startGroupCreate(options)
             flash.message = "${operation.task.name} has been started."
             redirectToTask(operation.taskId)
