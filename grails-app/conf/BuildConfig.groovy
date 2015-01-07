@@ -51,7 +51,7 @@ grails.project.dependency.resolution = {
         grailsPlugins()
         grailsHome()
         mavenCentral()
-        //mavenRepo "http://dl.bintray.com/spinnaker/spinnaker"
+        mavenRepo "http://dl.bintray.com/spinnaker/spinnaker"
         grailsCentral()
 	//mavenRepo "https://oss.sonatype.org/content/repositories/openid4java-snapshots"
 
