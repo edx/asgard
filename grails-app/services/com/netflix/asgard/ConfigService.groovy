@@ -987,6 +987,7 @@ class ConfigService {
    * values, these reservation types will be removed from the total count of reservations within the
    * AwsEc2Service. Otherwise, all reservation types will be returned.
    */
+  
   List<String> getReservationOfferingTypeFilters(){
     grailsApplication.config.cloud?.reservationOfferingTypeFilters ?: []
   }
@@ -1004,29 +1005,6 @@ class ConfigService {
      */
     boolean getEnableInstanceMonitoring() {
         grailsApplication.config.cloud?.launchConfig?.enableInstanceMonitoring ?: false
-    }
-
-    /**
-     * @return List of filters to apply to instance reservations (i.e. Light Utilization, etc). By providing
-     * values, these reservation types will be removed from the total count of reservations within the
-     * AwsEc2Service. Otherwise, all reservation types will be returned.
-     */
-    List<String> getReservationOfferingTypeFilters(){
-        grailsApplication.config.cloud?.reservationOfferingTypeFilters ?: []
-    }
-
-    /**
-     * @return URL for Cloud Ready REST calls
-     */
-    String getCloudReadyUrl() {
-        grailsApplication.config.cloud?.cloudReady?.url ?: null
-    }
-
-    /**
-     * @return Regions where Chaos Monkey is indigenous
-     */
-    Collection<Region> getChaosMonkeyRegions() {
-        grailsApplication.config.cloud?.cloudReady?.chaosMonkey?.regions ?: []
     }
 
     /**
