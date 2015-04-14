@@ -114,6 +114,18 @@ class GithubOauthAuthenticationProvider implements AuthenticationProvider {
 
         GithubToken token = new GithubToken(githubAccessToken)
 
+		// A local GORM model needs to exist in order to associate roles with users
+		// for RBAC. These records will not survive a restart, but will automatically
+		// be recreated.
+		// 
+		// TODO: ultimately this should be obviated
+		// 
+		if (! User.findByUsername(token.principal)) {
+			def user = new User(username: token.principal, passwordHash: new Sha256Hash(User.defaultPass).toHex())
+			user.addToRoles(Role.adminRole)
+			user.save(flush: true)
+		}
+		
         return token
     }
 

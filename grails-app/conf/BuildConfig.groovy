@@ -48,7 +48,7 @@ grails.project.dependency.resolution = {
     log 'warn'
 
     repositories {
-		grailsRepo "https://grails.org/plugins"
+        grailsRepo "https://grails.org/plugins"
         grailsPlugins()
         grailsHome()
         mavenCentral()
