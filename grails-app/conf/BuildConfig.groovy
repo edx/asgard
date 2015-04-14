@@ -48,6 +48,7 @@ grails.project.dependency.resolution = {
     log 'warn'
 
     repositories {
+		grailsRepo "https://grails.org/plugins"
         grailsPlugins()
         grailsHome()
         mavenCentral()
@@ -176,7 +177,7 @@ grails.project.dependency.resolution = {
 		compile ":jquery:1.8.0"
 
         runtime ":cors:1.0.4"
-        runtime ':oauth:2.0.1'
+        runtime ':oauth:2.6.1'
 
         // Spock in Grails 2.2.x http://grails.org/plugin/spock
         test(":spock:0.7") {

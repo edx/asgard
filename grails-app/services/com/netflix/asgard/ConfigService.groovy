@@ -1079,4 +1079,33 @@ class ConfigService {
     String getNewrelicAppName() {
         grailsApplication.config?.newrelic?.appName ?: ""
     }
+
+	String getGithubApiKey() {
+        grailsApplication.config.oauth?.providers?.github?.key ?: null
+	}
+
+	String getGithubApiSecret() {
+        grailsApplication.config.oauth?.providers?.github?.secret ?: null
+	}
+
+	String getGithubApiCallback() {
+        grailsApplication.config.oauth?.providers?.github?.callback ?: null
+	}
+
+	String getGithubApiScope() {
+        grailsApplication.config.oauth?.providers?.github?.scope ?: null
+	}
+
+	String getGithubApiEmailRegex() {
+        grailsApplication.config.oauth?.providers?.github?.extraArgs?.emailRegex ?: null
+	}
+
+	String getGithubApiTeamRegex() {
+        grailsApplication.config.oauth?.providers?.github?.extraArgs?.teamRegex ?: null
+	}
+
+	String getGithubApiOrganizationId() {
+        grailsApplication.config.oauth?.providers?.github?.extraArgs?.orgId ?: null
+	}
+
 }

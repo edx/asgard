@@ -26,6 +26,7 @@ import com.netflix.asgard.Region
 import com.netflix.asgard.ServiceInitLoggingBeanPostProcessor
 import com.netflix.asgard.SnsTaskFinishedListener
 import com.netflix.asgard.ThreadScheduler
+import com.netflix.asgard.auth.GithubOauthAuthenticationProvider;
 import com.netflix.asgard.auth.OneLoginAuthenticationProvider
 import com.netflix.asgard.auth.RestrictBrowserAuthorizationProvider
 import com.netflix.asgard.auth.GoogleAppsOpenIdAuthenticationProvider
@@ -40,6 +41,7 @@ import com.netflix.asgard.userdata.DefaultUserDataProvider
 import com.netflix.asgard.userdata.LocalFileUserDataProvider
 import com.netflix.asgard.userdata.NetflixAdvancedUserDataProvider
 import com.netflix.asgard.userdata.PropertiesUserDataProvider
+
 import groovy.io.FileType
 
 beans = {
@@ -117,6 +119,12 @@ beans = {
         }
     }
 
+	if (application.config.plugin?.authenticationProvider == 'githubOauthAuthenticationProvider') {
+		githubOauthAuthenticationProvider(GithubOauthAuthenticationProvider) { bean ->
+			bean.lazyInit = true
+		}
+	}
+	
     if (application.config.plugin?.advancedUserDataProvider == 'netflixAdvancedUserDataProvider') {
         netflixAdvancedUserDataProvider(NetflixAdvancedUserDataProvider) { bean ->
             bean.lazyInit = true
