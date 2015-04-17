@@ -184,7 +184,7 @@ class GithubOauthAuthenticationProvider implements AuthenticationProvider {
 							
 			def emailData = getAPIModel(USER_EMAILS_SCOPE, token)
 					
-			def authenticatedUsersEmail = emailData.find { it.verified && it.primary && it.email =~ emailRegex }
+			def authenticatedUsersEmail = emailData.find { it.verified && it.email =~ emailRegex }
 		
 			if (! authenticatedUsersEmail) {
 				throw new AuthenticationException('No valid principal ')
