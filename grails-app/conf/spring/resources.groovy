@@ -101,23 +101,23 @@ beans = {
       }
     }
 
-    if (application.config.plugin?.authenticationProvider == 'googleAppsOpenIdAuthenticationProvider') {
-      googleAppsOpenIdAuthenticationProvider(GoogleAppsOpenIdAuthenticationProvider) { bean ->
-	bean.lazyInit = true
-      }
-    }
-
-    if (application.config.plugin?.authenticationProvider == 'googleAppsOpenIdAuthenticationProvider') {
-        googleAppsOpenIdAuthenticationProvider(GoogleAppsOpenIdAuthenticationProvider) { bean ->
-            bean.lazyInit = true
-        }
-    }
-
-    if (application.config.plugin?.authenticationProvider == 'googleOpenIdConnectAuthenticationProvider') {
-        googleOpenIdConnectAuthenticationProvider(GoogleOpenIdConnectAuthenticationProvider) { bean ->
-            bean.lazyInit = true
-        }
-    }
+//    if (application.config.plugin?.authenticationProvider == 'googleAppsOpenIdAuthenticationProvider') {
+//      googleAppsOpenIdAuthenticationProvider(GoogleAppsOpenIdAuthenticationProvider) { bean ->
+//	bean.lazyInit = true
+//      }
+//    }
+//
+//    if (application.config.plugin?.authenticationProvider == 'googleAppsOpenIdAuthenticationProvider') {
+//        googleAppsOpenIdAuthenticationProvider(GoogleAppsOpenIdAuthenticationProvider) { bean ->
+//            bean.lazyInit = true
+//        }
+//    }
+//
+//    if (application.config.plugin?.authenticationProvider == 'googleOpenIdConnectAuthenticationProvider') {
+//        googleOpenIdConnectAuthenticationProvider(GoogleOpenIdConnectAuthenticationProvider) { bean ->
+//            bean.lazyInit = true
+//        }
+//    }
 
 	if (application.config.plugin?.authenticationProvider == 'githubOauthAuthenticationProvider') {
 		githubOauthAuthenticationProvider(GithubOauthAuthenticationProvider) { bean ->
