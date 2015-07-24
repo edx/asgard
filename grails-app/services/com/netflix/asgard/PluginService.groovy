@@ -22,7 +22,6 @@ import com.netflix.asgard.plugin.TaskFinishedListener
 import com.netflix.asgard.plugin.UserDataProvider
 import com.netflix.asgard.plugin.AdvancedUserDataProvider
 
-import org.apache.shiro.SecurityUtils
 import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
 
@@ -87,6 +86,7 @@ class PluginService implements ApplicationContextAware {
      * @return the configured {@link AuthenticationProvider} Spring bean, null if one isn't configured
      */
     AuthenticationProvider getAuthenticationProvider() {
+		
         if (flagService.isOn(Flag.SUSPEND_AUTHENTICATION_REQUIREMENT)) {
             return null
         }
