@@ -54,7 +54,10 @@ grails.project.dependency.resolution = {
         mavenCentral()
         mavenRepo "http://dl.bintray.com/spinnaker/spinnaker"
         grailsCentral()
-	//mavenRepo "https://oss.sonatype.org/content/repositories/openid4java-snapshots"
+        mavenRepo "http://dl.bintray.com/spinnaker/spinnaker"
+        mavenRepo "http://repo.grails.org/grails/core"
+        mavenRepo "http://repo.grails.org/grails/plugins"
+
 
         // Optional custom repository for dependencies.
         Closure internalRepo = {
