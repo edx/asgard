@@ -48,11 +48,9 @@ grails.project.dependency.resolution = {
     log 'warn'
 
     repositories {
-        grailsRepo "http://repo.grails.org/grails/plugins"
         grailsPlugins()
         grailsHome()
         mavenCentral()
-        mavenRepo "http://dl.bintray.com/spinnaker/spinnaker"
         grailsCentral()
         mavenRepo "http://dl.bintray.com/spinnaker/spinnaker"
         mavenRepo "http://repo.grails.org/grails/core"
