@@ -211,7 +211,7 @@ class GithubOauthAuthenticationProvider implements AuthenticationProvider {
 		
 		private void verify2faStatus(login, org, token) {
 
-			String org2faStatus = "https://api.github.com/orgs/${org}/members?filter=\\2fa_disabled"
+			String org2faStatus = "https://api.github.com/orgs/${org}/members?filter=2fa_disabled"
 			
 			def disabled2fa = getAPIModel(org2faStatus, token)
 			def  login2faDisabled = disabled2fa.find { it.login == login }
