@@ -790,20 +790,12 @@ class ConfigService {
         grailsApplication.config.security?.apiToken?.encryptionKeys ?: []
     }
 
-/**
-* @return true if api token based authentication is active, false otherwise
-*/
-boolean isApiTokenEnabled() {
-grailsApplication.config.security?.apiToken?.enabled ?: false
-}
-
-/**
+    /**
      * @return the names of the security groups that should be applied to all non-VPC deployments
      */
     List<String> getDefaultSecurityGroups() {
         grailsApplication.config.cloud?.defaultSecurityGroups ?: []
     }
->>>>>>> 51d4f6a... fix merge issue
 
     /**
      * @return the names of the security groups that should be applied to all VPC deployments
