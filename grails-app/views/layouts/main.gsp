@@ -47,10 +47,10 @@
   </div>
   <div class="titlebar">
     <div class="header">
-      <g:link uri="/">
-          <asset:image id="occasionIcon" class="logo" title="${occasion.message}" src="occasion/${occasion?.iconFileName}"/>
-          <div class="mainHeader">Asgard</div>
-      </g:link>
+      <a href="http://www.youtube.com/watch?v=ApxnAr6pRt0" target="_blank">
+        <img id="occasionIcon" class="logo" title="${occasion.message}" src="${resource(dir: 'images/occasion', file: occasion?.iconFileName)}"/>
+        <div class="mainHeader">Hammer of the Gods</div>
+      </a>
       <span>${env}</span>
     </div>
     <g:if test="${!pageProperty(name: 'meta.hideNav')}">
@@ -114,7 +114,7 @@
      </li>
      <li class="menuButton">
        <g:link class="loadBalancers" controller="loadBalancer" action="list">ELB</g:link>
-       <ul>
+       <ul> 
          <li class="menuButton"><g:link class="loadBalancers" controller="loadBalancer" action="list">Elastic Load Balancers</g:link></li>
          <li class="menuButton"><g:link class="hostedZones" controller="hostedZone" action="list">Route53 Hosted Zones</g:link></li>
        </ul>
@@ -131,20 +131,30 @@
            <li class="menuButton"><g:link class="volumeSnapshot" controller="snapshot" action="list">EBS Snapshots</g:link></li>
          </ul>
      </li>
+     <shiro:hasAnyRole in="['sdb']">
      <li class="menuButton">
        <g:link class="simpleDb" controller="domain" action="list">SDB</g:link>
      </li>
+     </shiro:hasAnyRole>
+     <shiro:hasAnyRole in="['sns']">
      <li class="menuButton"><g:link class="topic" controller="topic" action="list">SNS</g:link></li>
+     </shiro:hasAnyRole>
+     <shiro:hasAnyRole in="['sqs']">
      <li class="menuButton"><g:link class="queue" controller="queue" action="list">SQS</g:link></li>
-     <li class="menuButton">
-       <g:link class="rdsInstances" controller="rdsInstance" action="list">RDS</g:link>
-       <ul>
-         <li class="menuButton"><g:link class="rdsInstances" controller="rdsInstance" action="list">DB Instances</g:link></li>
-         <li class="menuButton"><g:link class="dbSecurity" controller="dbSecurity" action="list">DB Security</g:link></li>
-         <li class="menuButton"><g:link class="dbSnapshot" controller="dbSnapshot" action="list">DB Snapshots</g:link></li>
-       </ul>
-     </li>
-     <li class="menuButton"><g:link class="tasks" controller="task" action="list">Task</g:link></li>
+     </shiro:hasAnyRole>
+     <shiro:hasAnyRole in="['rds']">
+	     <li class="menuButton">
+	       <g:link class="rdsInstances" controller="rdsInstance" action="list">RDS</g:link>
+	       <ul>
+	         <li class="menuButton"><g:link class="rdsInstances" controller="rdsInstance" action="list">DB Instances</g:link></li>
+	         <li class="menuButton"><g:link class="dbSecurity" controller="dbSecurity" action="list">DB Security</g:link></li>
+	         <li class="menuButton"><g:link class="dbSnapshot" controller="dbSnapshot" action="list">DB Snapshots</g:link></li>
+	       </ul>
+	     </li>
+    </shiro:hasAnyRole>
+    <shiro:hasAnyRole in="['task']">
+        <li class="menuButton"><g:link class="tasks" controller="task" action="list">Task</g:link></li>
+    </shiro:hasAnyRole>
    </ul>
   </g:if>
   <div class="clear"></div>

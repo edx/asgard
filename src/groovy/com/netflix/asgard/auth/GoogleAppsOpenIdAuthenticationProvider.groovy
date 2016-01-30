@@ -97,7 +97,21 @@ class GoogleAppsOpenIdAuthenticationProvider implements AuthenticationProvider {
 
 	@Override
 	public String loginUrl(HttpServletRequest request) {
-		return "https://www.google.com/a/edx.org/o8/ud?be=o8&openid.ns=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0&openid.mode=checkid_setup&openid.claimed_id=https%3A%2F%2Fwww.google.com%2Faccounts%2Fo8%2Fsite-xrds%3Fhd%3Dedx.org&openid.identity=https%3A%2F%2Fwww.google.com%2Faccounts%2Fo8%2Fsite-xrds%3Fhd%3Dedx.org&openid.return_to=http%3A%2F%2Fdev-hotg.edx.org:8080/auth/signIn&openid.ns.ax=http%3A%2F%2Fopenid.net%2Fsrv%2Fax%2F1.0&openid.ax.mode=fetch_request&openid.ax.required=email%2CfirstName%2ClastName&openid.ax.type.email=http%3A%2F%2Fschema.openid.net%2Fcontact%2Femail&openid.ax.type.firstName=http%3A%2F%2Faxschema.org%2FnamePerson%2Ffirst&openid.ax.type.lastName=http%3A%2F%2Faxschema.org%2FnamePerson%2Flast&openid.ns.ext2=http%3A%2F%2Fspecs.openid.net%2Fextensions%2Fui%2F1.0&openid.ext2.icon=true"
+		return "https://www.google.com/a/edx.org/o8/ud" +
+		"?be=o8" + 
+		"&openid.ns=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0" +
+		"&openid.mode=checkid_setup" +
+		"&openid.claimed_id=https%3A%2F%2Fwww.google.com%2Faccounts%2Fo8%2Fsite-xrds%3Fhd%3Dedx.org" +
+		"&openid.identity=https%3A%2F%2Fwww.google.com%2Faccounts%2Fo8%2Fsite-xrds%3Fhd%3Dedx.org" + 
+		"&openid.return_to=" + java.net.URLEncoder.encode(configService.getGoogleAppsOauthReturnTo(),'UTF-8') + 
+		"&openid.ns.ax=http%3A%2F%2Fopenid.net%2Fsrv%2Fax%2F1.0" +
+		"&openid.ax.mode=fetch_request" +
+		"&openid.ax.required=email%2CfirstName%2ClastName" +
+		"&openid.ax.type.email=http%3A%2F%2Fschema.openid.net%2Fcontact%2Femail" +
+		"&openid.ax.type.firstName=http%3A%2F%2Faxschema.org%2FnamePerson%2Ffirst" +
+		"&openid.ax.type.lastName=http%3A%2F%2Faxschema.org%2FnamePerson%2Flast" + 
+		"&openid.ns.ext2=http%3A%2F%2Fspecs.openid.net%2Fextensions%2Fui%2F1.0" + 
+		"&openid.ext2.icon=true"
 	}
 
 	@Override
@@ -118,7 +132,7 @@ class GoogleAppsOpenIdAuthenticationProvider implements AuthenticationProvider {
 		DiscoveryInformation discovered = (DiscoveryInformation) request.getSession().getAttribute("discovered")
 
 		// extract the receiving URL from the HTTP request
-		URI url = new URI(request.getRequestURL() as String)
+		URI url = new URI(request.getRequestURL() as String)	
 		String receivingURL = url.scheme + "://" + url.authority + request.forwardURI
 		String queryString = request.queryString
 		if (queryString != null && queryString.length() > 0)

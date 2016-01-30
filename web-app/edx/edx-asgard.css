@@ -1,0 +1,321 @@
+/* Asgard edX custom css */
+
+@import url(http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,400,600,700);
+
+body {
+  font: 16px/1.3 "Open Sans","Helvetica Neue",Helvetica,Arial,sans-serif;
+  }
+
+
+h1 {
+  font-size: 28px;
+  line-height: 1.5em;
+  margin: 10px 0;
+  }
+
+h2 {
+  font-size: 18px;
+  line-height: 1.5em;
+  font-weight: bold;
+  margin: 0 0 7px 0;
+  }
+
+h3 {
+  font-size: 16px;
+  line-height: 1.5em;
+  font-weight: bold;
+  margin: 0 0 5px 0;
+  }
+
+h4 {
+  font-size: 14px;
+  line-height: 1.5em;
+  font-weight: bold;
+  margin: 0 0 5px 0;
+  }
+
+h5 {
+  font-size: 13px;
+  line-height: 1.5em;
+  font-weight: bold;
+  margin: 0 0 3px 0;
+  }
+
+h6 {
+  font-size: 12px;
+  line-height: 1.5em;
+  font-weight: bold;
+  margin: 0 0 3px 0;
+  }
+
+p {
+  font-size: 12px;
+  line-height: 1.5em;
+  margin: 0 0 7px 0;
+  }
+
+ul {
+  margin: 10px 5px;
+  }
+
+ol {
+  margin: 10px 0;
+  list-style-type: decimal;
+  }
+
+/* titlebar */
+
+.titlebar,
+.prod .titlebar {
+  float: none;
+  overflow: hidden;
+  background-color: #ddd;
+  height: auto;
+  padding: 10px;
+  color: #9a9a9a;
+}
+
+.prod .titlebar .search,
+.prod .titlebar .ticket,
+.prod .titlebar .region {
+  background: transparent;
+}
+
+.prod .titlebar .mainHeader {
+  background: transparent url('edx-logo-gray.png') center no-repeat;
+}
+
+.header {
+  margin-right: 40px;
+}
+
+.authentication {
+  padding: 0;
+  font-size: 14px;
+}
+
+.authentication ul,
+.authentication:hover ul {
+  display: inline-block;
+  position: relative;
+  margin: 5px 20px;
+  padding: 0;
+}
+
+
+/* nav */
+
+.nav {
+  float: none;
+  background-image: none;
+  border: 0;
+  margin: 0;
+}
+
+
+.nav li {
+  padding: 0 15px;
+  height: auto;
+  font-size: 12px;
+  border: 1px solid #ddd;
+
+}
+
+
+
+/* content */
+
+.body {
+  float: none;
+  overflow: hidden;
+}
+
+span.toggle {
+  background: url('icomoon/blue/arrow-down.svg') no-repeat scroll 0 center transparent;
+}
+
+.body .create span.toggle {
+  font-weight: normal;
+  font-size: 12px;
+}
+
+.hideAdvancedItems span.toggle {
+  background: url('icomoon/blue/arrow-right2.svg') no-repeat scroll 0 center transparent;
+}
+
+
+
+/* tables */
+table {
+  border: 0;
+  border-top: 1px solid #ddd;
+}
+
+th,
+td,
+.body footer {
+  background-image: none;
+  border-collapse: collapse;
+  border-right: 1px solid #ddd;
+  margin: 0;
+  padding: 10px 5px;
+}
+
+footer {
+  background-color: #eee;
+}
+
+.list {
+    float: none;
+}
+
+label[for=imageId] {
+  font-weight: bold;
+  color: #126F9A;
+}
+
+
+/* buttons */
+
+div.buttons,
+th.buttons {
+  background-image: none;
+  padding: 10px;
+}
+
+.buttons a,
+.buttons button {
+  transition: color 0.25s ease-in-out 0s, background 0.25s ease-in-out 0s, box-shadow 0.25s ease-in-out 0s;
+  box-shadow: 0 2px 1px 0 #0A4A67;
+  margin: 5px;
+  border-radius: 3px;
+  background: none repeat scroll 0 0 #126F9A;
+  padding: 6px;
+  color: #FFFFFF;
+}
+
+.buttons a,
+.buttons button div {
+  border: 0;
+  background-color: transparent;
+  color: inherit;
+  font-size: 14px;
+}
+
+.buttons button div:hover,
+.buttons button:hover div {
+  background-color: transparent !important;
+  color: inherit;
+  }
+
+.buttons a:hover,
+.buttons button:hover {
+  background-color: #1790C7 !important;
+  color: #FFFFFF;
+}
+
+
+.buttons button.create div {
+  background: none;
+  padding: 0;
+}
+
+.buttons a.create,
+.buttons button.create {
+  margin: 5px;
+  border: 0;
+  background: url('icomoon/plus.svg') no-repeat scroll 10px #006C00;
+  box-shadow: 0 2px 1px 0 #005100;
+  color: #FFFFFF;
+  padding: 10px 10px 10px 35px;
+  font-size: 14px;
+}
+
+.buttons a.create:hover,
+.buttons button.create:hover {
+  background-color: #60BC61 !important;
+  color: #FFFFFF;
+}
+
+
+button.resize {
+  background-image: url('icomoon/blue/expand.svg');
+  background-repeat: no-repeat;
+  background-position: 10px center;
+  background-color: transparent;
+  box-shadow: none;
+  color: #126F9A;
+}
+
+button.resize:hover {
+  background-image: url('icomoon/expand.svg');
+}
+
+button.resize div,
+a.resize {
+  background: none;
+  padding: 6px 6px 6px 25px;
+}
+
+
+
+
+.buttons button.delete div {
+  background: none;
+  padding: 6px 6px 6px 25px;
+}
+
+.buttons button.delete {
+  background-image: url('icomoon/close.svg');
+  background-repeat: no-repeat;
+  background-position: 10px center;
+  background-color: #AC1615;
+  box-shadow: 0 2px 1px 0 #ddd;
+}
+
+.buttons button.delete:hover {
+  background-color: #CD1A19 !important;
+  box-shadow: 0 2px 1px 0 #8C393F;
+}
+
+
+.buttons button.trafficEnable div,
+.buttons button.trafficDisable div {
+  background: none;
+  padding: 6px;
+}
+
+.buttons button.trafficEnable {
+  background-color: #0B6E0C;
+  box-shadow: 0 2px 1px 0 #005100;
+}
+
+
+.buttons button.trafficDisable {
+  background-color: #aaa;
+  box-shadow: 0 2px 1px 0 #ddd;
+}
+
+.buttons button.trafficDisable:hover {
+  background-color: #555 !important;
+  box-shadow: 0 2px 1px 0 #999;
+}
+
+.buttons button.stop div {
+  background: none;
+  padding: 6px 6px 6px 25px;
+}
+
+.buttons button.stop {
+  background-image: url('icomoon/close.svg');
+  background-repeat: no-repeat;
+  background-position: 10px center;
+  background-color: #aaa;
+  box-shadow: 0 2px 1px 0 #ddd;
+}
+
+.buttons button.stop:hover {
+  background-color: #CD1A19 !important;
+  box-shadow: 0 2px 1px 0 #8C393F;
+}
+
