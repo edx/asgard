@@ -22,7 +22,6 @@ import com.netflix.asgard.plugin.TaskFinishedListener
 import com.netflix.asgard.plugin.UserDataProvider
 import com.netflix.asgard.plugin.AdvancedUserDataProvider
 
-import org.apache.shiro.SecurityUtils
 import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
 
