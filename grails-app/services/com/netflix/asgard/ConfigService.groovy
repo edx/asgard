@@ -1126,7 +1126,11 @@ grailsApplication.config.security?.apiToken?.enabled ?: false
         grailsApplication.config.oauth?.providers?.github?.extraArgs?.teamRegex ?: null
 	}
 
-	String getGithubApiOrganizationId() {
+    String getGithubApiOrganization() {
+		grailsApplication.config.oauth?.providers?.github?.extraArgs?.org ?: null
+	}
+	
+    String getGithubApiOrganizationId() {
         grailsApplication.config.oauth?.providers?.github?.extraArgs?.orgId ?: null
 	}
 

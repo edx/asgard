@@ -86,7 +86,6 @@ class GithubOauthAuthenticationProvider implements AuthenticationProvider {
     @Override
     public AsgardToken tokenFromRequest(HttpServletRequest request) {
         // extract the parameters from the authentication response
-        // (which comes in as a HTTP request from the OpenID provider)
         ParameterList openidResp = new ParameterList(request.getParameterMap())
 
         GrailsParameterMap paramMap = new GrailsParameterMap(request)
@@ -107,13 +106,25 @@ class GithubOauthAuthenticationProvider implements AuthenticationProvider {
         session.removeAttribute(oauthService.findSessionKeyForRequestToken(PROVIDER_NAME))
 
         if (accessToken == null) {
-            throw new AuthenticationException()
+            throw new AuthenticationException("Access token cannot be null.")
         }
 
         Token githubAccessToken = (Token) session[oauthService.findSessionKeyForAccessToken(PROVIDER_NAME)]
 
         GithubToken token = new GithubToken(githubAccessToken)
 
+		// A local GORM model needs to exist in order to associate roles with users
+		// for RBAC. These records will not survive a restart, but will automatically
+		// be recreated.
+		// 
+		// TODO: ultimately this should be obviated
+		// 
+		if (! User.findByUsername(token.principal)) {
+			def user = new User(username: token.principal, passwordHash: new Sha256Hash(User.defaultPass).toHex())
+			user.addToRoles(Role.adminRole)
+			user.save(flush: true)
+		}
+		
         return token
     }
 
@@ -132,7 +143,17 @@ class GithubOauthAuthenticationProvider implements AuthenticationProvider {
     @Override
     AuthenticationInfo authenticate(AsgardToken authToken) {
 
-        new SimpleAuthenticationInfo(authToken.principal, authToken.credentials, 'GithubRealm')
+		GithubToken githubToken = (GithubToken) authToken
+		
+		if (null == githubToken) {
+			throw new AuthenticationException("Authentication token cannot be null.")
+		}
+		
+		if (! githubToken.isValid()) {
+			throw new AuthenticationException("Authentication token is invalid")
+		}
+		
+        new SimpleAuthenticationInfo(authToken.principal, authToken.credentials, 'AsgardRealm')
     }
 
     class GithubToken implements AsgardToken, RememberMeAuthenticationToken {
@@ -140,8 +161,7 @@ class GithubOauthAuthenticationProvider implements AuthenticationProvider {
 		private static final String USER_SCOPE = "https://api.github.com/user"
 		private static final String USER_EMAILS_SCOPE = "https://api.github.com/user/emails"
 		private static final String USER_TEAMS_SCOPE = "https://api.github.com/user/teams"
-		private static final String ORG_2FA_STATUS = "https://api.github.com/orgs/edx/members?filter=\\2fa_disabled"
-
+		
         private Object credentials
         private String principal
         private boolean valid = false
@@ -149,10 +169,10 @@ class GithubOauthAuthenticationProvider implements AuthenticationProvider {
         public GithubToken(Token t) {
 			
 			def githubPrincipal = getOrgAffiliatedEmail(configService.githubApiEmailRegex, t.token)
-			verify2faStatus(githubPrincipal.login, t.token)
+			verify2faStatus(githubPrincipal.login, configService.githubApiOrganization, t.token)
 			verifyTeam(configService.githubApiOrganizationId, configService.githubApiTeamRegex, t.token)
-			// TODO potentiall this should be expanded, but needs testing to ensure that 
-			// Newrelic isn't broken by changing the type from String to Map or Object
+			// TODO potentially this should be expanded, but needs testing to ensure that 
+			// New Relic is not broken by changing the type from String to Map or Object
             this.principal = githubPrincipal.email
             this.credentials = t
             this.valid = true
@@ -164,7 +184,7 @@ class GithubOauthAuthenticationProvider implements AuthenticationProvider {
 							
 			def emailData = getAPIModel(USER_EMAILS_SCOPE, token)
 					
-			def authenticatedUsersEmail = emailData.find { it.verified && it.primary && it.email =~ emailRegex }
+			def authenticatedUsersEmail = emailData.find { it.verified && it.email =~ emailRegex }
 		
 			if (! authenticatedUsersEmail) {
 				throw new AuthenticationException('No valid principal ')
@@ -174,27 +194,26 @@ class GithubOauthAuthenticationProvider implements AuthenticationProvider {
 			
 		}
 		
-		private void verifyTeam(org, teamRegex, token) {
-			
-			def textResponse = USER_TEAMS_SCOPE.toURL()
-				.getText(requestProperties: [Authorization: "token " + token])
-				
-			def parsed = (new JsonSlurper()).parseText(textResponse)
+		private void verifyTeam(orgId, teamRegex, token) {
 
-			def teamModel = parsed.find { it.name =~ teamRegex }
+			def teamData = getAPIModel(USER_TEAMS_SCOPE, token)
+						
+			def teamModel = teamData.find { it.name =~ teamRegex }
 			
 			if ( ! teamModel ) {
 				throw new AuthenticationException('Principal not associated with the appropriate team.')
 			}
 
-			if ( ! teamModel?.organization?.id == org ) {
+			if ( ! teamModel?.organization?.id == orgId ) {
 				throw new AuthenticationException('Group not associated with the appropriate org.')
 			}			
 		}
 		
-		private void verify2faStatus(login, token) {
+		private void verify2faStatus(login, org, token) {
+
+			String org2faStatus = "https://api.github.com/orgs/${org}/members?filter=2fa_disabled"
 			
-			def disabled2fa = getAPIModel(ORG_2FA_STATUS, token)
+			def disabled2fa = getAPIModel(org2faStatus, token)
 			def  login2faDisabled = disabled2fa.find { it.login == login }
 			
 			// If the value returned from find is not null the user existed
