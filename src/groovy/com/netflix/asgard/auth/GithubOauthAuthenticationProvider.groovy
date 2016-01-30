@@ -124,7 +124,7 @@ class GithubOauthAuthenticationProvider implements AuthenticationProvider {
         return token
     }
 
-    private Verifier extractVerifier(GrailsParameterMap params) {
+    private Verifier extractVerifier(OauthProvider provider, GrailsParameterMap params) {
 
         if (!params[VERIFIER_KEY]) {
             log.error("Cannot authenticate with oauth: Could not find oauth verifier in ${params}.")
