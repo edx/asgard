@@ -38,6 +38,7 @@ class GroupCreateOperation extends AbstractPushOperation {
 
     def awsEc2Service
     def discoveryService
+    def newrelicService
     private final GroupCreateOptions options
     Task task
 
@@ -63,8 +64,7 @@ class GroupCreateOperation extends AbstractPushOperation {
         String clusterName = Relationships.clusterFromGroupName(options.common.groupName)
         String msg = "Creating auto scaling group '$options.common.groupName', " +
                 "min $options.minSize, max $options.maxSize, traffic ${options.initialTraffic.name().toLowerCase()}"
-        task = taskService.startTask(options.common.userContext, msg, { Task task ->
-
+        task = taskService.startTask(options.common.userContext, msg, { Task task ->            
             task.email = applicationService.getEmailFromApp(options.common.userContext, options.common.appName)
             thisOperation.task = task
             task.log("Group '${options.common.groupName}' will start with 0 instances")
@@ -83,7 +83,8 @@ class GroupCreateOperation extends AbstractPushOperation {
                     withKeyName(options.keyName).withRamdiskId(options.ramdiskId).
                     withSecurityGroups(options.common.securityGroups).
                     withIamInstanceProfile(options.iamInstanceProfile).
-                    withSpotPrice(options.spotPrice).withEbsOptimized(options.ebsOptimized)
+                    withSpotPrice(options.spotPrice).withEbsOptimized(options.ebsOptimized).
+                    withBlockDeviceMappings(options.blockDeviceMappings)
 
             final Collection<AutoScalingProcessType> suspendedProcesses = Sets.newHashSet()
             if (options.zoneRebalancingSuspended) {
@@ -123,7 +124,9 @@ ${groupTemplate.loadBalancerNames} and result ${result}"""
                         awsAutoScalingService.suspendProcess(userContext, it, options.common.groupName, task)
                     }
                 }
-
+                newrelicService.notifyOfAsgCreate(options.common.userContext,
+                    awsAutoScalingService.getAutoScalingGroup(options.common.userContext,
+                        result.autoScalingGroupName))
             } else {
                 fail(result.toString())
             }

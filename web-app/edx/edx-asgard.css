@@ -112,6 +112,9 @@ ol {
   margin: 0;
 }
 
+.nav ul {
+	margin: 0;
+}
 
 .nav li {
   padding: 0 15px;
@@ -184,7 +187,9 @@ th.buttons {
 }
 
 .buttons a,
-.buttons button {
+.buttons button, 
+.buttons .pushRolling,
+.buttons .pushReplace {
   transition: color 0.25s ease-in-out 0s, background 0.25s ease-in-out 0s, box-shadow 0.25s ease-in-out 0s;
   box-shadow: 0 2px 1px 0 #0A4A67;
   margin: 5px;
@@ -192,6 +197,11 @@ th.buttons {
   background: none repeat scroll 0 0 #126F9A;
   padding: 6px;
   color: #FFFFFF;
+}
+
+.buttons .pushRolling,
+.buttons .pushReplace {
+	padding: 12px;
 }
 
 .buttons a,
@@ -260,7 +270,8 @@ a.resize {
 
 
 
-.buttons button.delete div {
+.buttons button.delete div,
+.subitems .buttons button.delete div {
   background: none;
   padding: 6px 6px 6px 25px;
 }
@@ -269,19 +280,195 @@ a.resize {
   background-image: url('icomoon/close.svg');
   background-repeat: no-repeat;
   background-position: 10px center;
-  background-color: #AC1615;
+  background-color: #CD1A19;
   box-shadow: 0 2px 1px 0 #ddd;
 }
 
 .buttons button.delete:hover {
-  background-color: #CD1A19 !important;
-  box-shadow: 0 2px 1px 0 #8C393F;
+  background-color: #da5959 !important;
+  box-shadow: 0 2px 1px 0 #da5959;
+}
+
+.buttons a.edit,
+.buttons button.edit div {
+  background: none;
+  padding: 12px 12px 12px 35px;
+}
+
+.buttons a.edit,
+.buttons button.edit {
+  background-image: url('icomoon/pencil.svg');
+  background-repeat: no-repeat;
+  background-position: 10px center;
+  background-color: #126F9A;
+  box-shadow: 0 2px 1px 0 #ddd;
+  color: #FFFFFF;
+}
+
+.buttons a.edit:hover,
+.buttons button.edit:hover {
+  background-color: #1790C7 !important;
+  color: #FFFFFF;
+}
+
+
+.buttons a.push,
+.buttons button.push div {
+  background: none;
+  padding: 12px 12px 12px 35px;
+}
+
+.buttons a.push,
+.buttons button.push {
+  background-image: url('icomoon/white/rocket.svg');
+  background-repeat: no-repeat;
+  background-position: 10px center;
+  background-color: #006C00;
+  box-shadow: 0 2px 1px 0 #ddd;
+  color: #FFFFFF;
+}
+
+.buttons a.push:hover,
+.buttons button.push:hover {
+  background-color: #60BC61 !important;
+  color: #FFFFFF;
+}
+
+.buttons a.cli,
+.buttons button.cli div {
+  background: none;
+  padding: 12px 12px 12px 35px;
+}
+
+.buttons a.cli,
+.buttons button.cli {
+  background-image: url('icomoon/white/console.svg');
+  background-repeat: no-repeat;
+  background-position: 10px center;
+  background-color: #006C00;
+  box-shadow: 0 2px 1px 0 #ddd;
+  color: #FFFFFF;
+}
+
+.buttons a.cli:hover,
+.buttons button.cli:hover {
+  background-color: #60BC61 !important;
+  color: #FFFFFF;
+}
+
+.buttons a.userData,
+.buttons button.userData div {
+  background: none;
+  padding: 12px 12px 12px 35px;
+}
+
+.buttons a.userData,
+.buttons button.userData {
+  background-image: url('icomoon/white/file.svg');
+  background-repeat: no-repeat;
+  background-position: 10px center;
+  background-color: #006C00;
+  box-shadow: 0 2px 1px 0 #ddd;
+  color: #FFFFFF;
+}
+
+.buttons a.userData:hover,
+.buttons button.userData:hover {
+  background-color: #60BC61 !important;
+  color: #FFFFFF;
+}
+
+.buttons a.attachElastic,
+.buttons button.attachElastic div {
+  background: none;
+  padding: 12px 12px 12px 35px;
+}
+
+.buttons a.attachElastic,
+.buttons button.attachElastic {
+  background-image: url('icomoon/white/link.svg');
+  background-repeat: no-repeat;
+  background-position: 10px center;
+  background-color: #006C00;
+  box-shadow: 0 2px 1px 0 #ddd;
+  color: #FFFFFF;
+}
+
+.buttons a.removeBalance,
+.buttons button.removeBalance div {
+  background: none;
+  padding: 6px 6px 6px 25px;
+}
+
+.buttons a.removeBalance,
+.buttons button.removeBalance {
+  background-image: url('icomoon/white/remove.svg');
+  background-repeat: no-repeat;
+  background-position: 10px center;
+  background-color: #006C00;
+  box-shadow: 0 2px 1px 0 #ddd;
+  color: #FFFFFF;
+}
+.buttons a.removeBalance:hover,
+.buttons button.removeBalance:hover {
+  background-color: #60BC61 !important;
+  color: #FFFFFF;
+}
+
+.buttons a.shutdown,
+.buttons button.shutdown div {
+  background: none;
+  padding: 6px 6px 6px 25px;
+}
+
+.buttons a.shutdown,
+.buttons button.shutdown {
+  background-image: url('icomoon/white/loop.svg');
+  background-repeat: no-repeat;
+  background-position: 10px center;
+  background-color: #006C00;
+  box-shadow: 0 2px 1px 0 #ddd;
+  color: #FFFFFF;
+}
+.buttons a.shutdown:hover,
+.buttons button.shutdown:hover {
+  background-color: #60BC61 !important;
+  color: #FFFFFF;
+}
+
+.buttons a.instanceBalance,
+.buttons button.instanceBalance div {
+  background: none;
+  padding: 6px 6px 6px 25px;
+}
+
+.buttons a.instanceBalance,
+.buttons button.instanceBalance {
+  background-image: url('icomoon/white/tree.svg');
+  background-repeat: no-repeat;
+  background-position: 10px center;
+  background-color: #006C00;
+  box-shadow: 0 2px 1px 0 #ddd;
+  color: #FFFFFF;
+}
+.buttons a.instanceBalance:hover,
+.buttons button.instanceBalance:hover {
+  background-color: #60BC61 !important;
+  color: #FFFFFF;
+}
+
+
+.buttons a.attachElastic:hover,
+.buttons button.attachElastic:hover {
+  background-color: #60BC61 !important;
+  color: #FFFFFF;
 }
 
 
 .buttons button.trafficEnable div,
 .buttons button.trafficDisable div {
   background: none;
+  color: #FFFFFF;
   padding: 6px;
 }
 
@@ -290,32 +477,224 @@ a.resize {
   box-shadow: 0 2px 1px 0 #005100;
 }
 
+.buttons button.trafficEnable:hover {
+  background-color: #60BC61 !important;
+  box-shadow: 0 2px 1px 0 #60BC61;
+}
 
 .buttons button.trafficDisable {
-  background-color: #aaa;
+  background-color: #AC9515;
   box-shadow: 0 2px 1px 0 #ddd;
 }
 
 .buttons button.trafficDisable:hover {
-  background-color: #555 !important;
-  box-shadow: 0 2px 1px 0 #999;
+  background-color: #c3b356 !important;
+  box-shadow: 0 2px 1px 0 #c3b356;
 }
 
 .buttons button.stop div {
   background: none;
   padding: 6px 6px 6px 25px;
 }
-
 .buttons button.stop {
   background-image: url('icomoon/close.svg');
   background-repeat: no-repeat;
   background-position: 10px center;
-  background-color: #aaa;
+  background-color: #CD1A19;
   box-shadow: 0 2px 1px 0 #ddd;
 }
 
 .buttons button.stop:hover {
-  background-color: #CD1A19 !important;
-  box-shadow: 0 2px 1px 0 #8C393F;
+  background-color: #da5959 !important;
+  box-shadow: 0 2px 1px 0 #da5959;
 }
 
+
+.buttons button.clean div {
+  background: none;
+  padding: 6px 6px 6px 25px;
+}
+
+.buttons button.clean {
+  background-image: url('icomoon/close.svg');
+  background-repeat: no-repeat;
+  background-position: 10px center;
+  background-color: #006C00;
+  box-shadow: 0 2px 1px 0 #ddd;
+}
+
+.buttons button.clean:hover {
+  background-color: #60BC61 !important;
+  box-shadow: 0 2px 1px 0 #60BC61;
+}
+
+/* ICONS FOR STANDARD TEXT LINKS, overriding a subset of those defined in main.css
+   to disable the icons, which were largely simply repeated in any given column
+   and thus provide no additional information.
+
+a.cluster {
+  padding:  2px 2px  2px 26px;
+  background: none;
+  display: inline-block;
+  line-height: 16px;
+  min-height: 16px;
+}
+
+a.image {
+  padding:  2px 2px  2px 26px;
+  background: none;
+  display: inline-block;
+  line-height: 16px;
+  min-height: 16px;
+}
+a.autoScaling {
+  padding:  2px 2px  2px 26px;
+  background: none;
+  display: inline-block;
+  line-height: 16px;
+  min-height: 16px;
+}
+a.instance {
+  padding:  2px 2px  2px 26px;
+  background: none;
+  display: inline-block;
+  line-height: 16px;
+  min-height: 16px;
+}
+a.loadBalancer {
+  padding:  2px 2px  2px 26px;
+  background: none;
+  display: inline-block;
+  line-height: 16px;
+  min-height: 16px;
+}
+a.stack {
+  padding:  2px 2px  2px 26px;
+  background: none;
+  display: inline-block;
+  line-height: 16px;
+  min-height: 16px;
+}
+a.user {
+  padding:  2px 2px  2px 26px;
+  background: none;
+  display: inline-block;
+  line-height: 16px;
+  min-height: 16px;
+}
+a.application {
+  padding:  2px 2px  2px 26px;
+  background: none;
+  display: inline-block;
+  line-height: 16px;
+  min-height: 16px;
+}
+a.hostedZone {
+  padding:  2px 2px  2px 26px;
+  background: none;
+  display: inline-block;
+  line-height: 16px;
+  min-height: 16px;
+}
+a.volume {
+  padding:  2px 2px  2px 26px;
+  background: none;
+  display: inline-block;
+  line-height: 16px;
+  min-height: 16px;
+}
+a.snapshot {
+  padding:  2px 2px  2px 26px;
+  background: none;
+  display: inline-block;
+  line-height: 16px;
+  min-height: 16px;
+}
+a.launchConfiguration {
+  padding:  2px 2px  2px 26px;
+  background: none;
+  display: inline-block;
+  line-height: 16px;
+  min-height: 16px;
+}
+a.scalingPolicy {
+  padding:  2px 2px  2px 26px;
+  background: none;
+  display: inline-block;
+  line-height: 16px;
+  min-height: 16px;
+}
+a.scheduledAction {
+  padding:  2px 2px  2px 26px;
+  background: none;
+  display: inline-block;
+  line-height: 16px;
+  min-height: 16px;
+}
+a.alarm {
+  padding:  2px 2px  2px 26px;
+  background: none;
+  display: inline-block;
+  line-height: 16px;
+  min-height: 16px;
+}
+*/
+
+a.prod {
+  padding: 10px 5px 10px 26px;
+  background: url(icomoon/rocket.svg) transparent no-repeat 7px 10px;
+  line-height: 16px; 
+  min-height: 16px;
+}
+a.test {
+  padding: 10px 5px 10px 26px;
+  background: url(icomoon/lab.svg) transparent no-repeat 7px 10px;
+  line-height: 16px;
+  min-height: 16px;
+}
+h2.prod {
+  padding: 8px 8px 8px 35px;
+  background: url(icomoon/rocket.svg) transparent no-repeat 5px 1px;
+  background-size: 25px, 25px;
+  display: inline-block;
+  line-height: 16px;
+  min-height: 16px;
+}
+h2.test {
+  padding: 8px 8px 8px 35px;
+  background: url(icomoon/lab.svg) transparent no-repeat 5px 1px;
+  background-size: 25px, 25px;
+  display: inline-block;
+  line-height: 16px;
+  min-height: 16px;
+}
+
+.list th { 
+  vertical-align: top; 
+  line-height: 19px; 
+  background-color: #ddd;
+}
+
+.list th:hover, .list tr:hover {
+background: #9a9a9a;
+}
+
+div.filter input {
+  background-color: #ddd;
+}
+
+div.filter input:focus {
+  background-color: #ddd;
+}
+
+.suspendProcess {
+  background:  url(icomoon/pause.svg) 8px 50% no-repeat;
+  margin: 0    0 5px 0;
+  padding: 5px 5px 5px 30px;
+}
+
+.runProcess {
+  background:  url(icomoon/play.svg) 8px 50% no-repeat;
+  margin: 0    0 5px 0;
+  padding: 5px 5px 5px 30px;
+}

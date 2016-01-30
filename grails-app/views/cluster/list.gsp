@@ -42,7 +42,21 @@
         <tbody>
         <g:each in="${clusters}" status="i" var="cluster">
           <tr class="${(i % 2) == 0 ? 'odd' : 'even'}">
-            <td><g:linkObject type="cluster" name="${cluster.name}"/></td>
+            <g:if test="${cluster.name.startsWith('prod')}">
+                <td>
+	                <g:linkObject class="none" type="cluster" name="${cluster.name}" title="Production Cluster">
+	                    <img src="${resource(dir: 'edx/icomoon', file: 'rocket.svg')}"/>
+	                </g:linkObject>
+                </td>
+            </g:if>
+            <g:else>
+                <td>
+                    <g:linkObject class="none" type="cluster" name="${cluster.name}" title="Experimental Cluster">
+                        <img src="${resource(dir: 'edx/icomoon', file: 'lab.svg')}"/>
+                    </g:linkObject>
+                </td>            
+            </g:else>
+            
             <td>
               <g:each var="group" in="${cluster.groups}">
                 <g:linkObject type="autoScaling" name="${group.autoScalingGroupName}"/> (${group.instances.size()})<br>

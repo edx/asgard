@@ -16,6 +16,8 @@
 package com.netflix.asgard
 
 import com.amazonaws.services.autoscaling.model.AutoScalingGroup
+import com.amazonaws.services.autoscaling.model.InstanceMonitoring
+import com.amazonaws.services.autoscaling.model.BlockDeviceMapping
 import com.amazonaws.services.autoscaling.model.LaunchConfiguration
 import com.amazonaws.services.autoscaling.model.ScheduledUpdateGroupAction
 import com.amazonaws.services.autoscaling.model.TagDescription;
@@ -61,6 +63,7 @@ class ClusterController {
     def pushService
     def spotInstanceRequestService
     def taskService
+    def newrelicService
 
     def index() {
         redirect(action: 'list', params: params)
@@ -243,16 +246,16 @@ ${lastGroup.loadBalancerNames}"""
             List<ScheduledUpdateGroupAction> newScheduledActions = awsAutoScalingService.copyScheduledActionsForNewAsg(
                     userContext, nextGroupName, lastScheduledActions)
 
-			List<TagDescription> tags = lastGroup.tags			
-			List<TagDescription> filteredTags = []
-			
-			// TODO: clean up, filtering closures do not work on Java classes, this is from Google collections.
-			for (tag in tags) {
-				if (! tag.key.startsWith("aws")) {
-					filteredTags.add(tag)
-				}
-			}
-		
+            List<TagDescription> tags = lastGroup.tags
+            List<TagDescription> filteredTags = []
+
+            // TODO: clean up, filtering closures do not work on Java classes, this is from Google collections.
+            for (tag in tags) {
+                if (! tag.key.startsWith("aws")) {
+                    filteredTags.add(tag)
+            	}
+            }
+
             Integer lastGracePeriod = lastGroup.healthCheckGracePeriod
             String vpcZoneIdentifier = subnets.constructNewVpcZoneIdentifierForPurposeAndZones(subnetPurpose,
                     selectedZones)
@@ -264,6 +267,7 @@ ${loadBalancerNames}"""
 Group: ${lastGroup.loadBalancerNames}"""
             boolean ebsOptimized = params.containsKey('ebsOptimized') ? params.ebsOptimized?.toBoolean() :
                 lastLaunchConfig.ebsOptimized
+            Collection<BlockDeviceMapping> blockDeviceMappings = lastLaunchConfig.blockDeviceMappings
             if (params.noOptionalDefaults != 'true') {
                 securityGroups = securityGroups ?: lastLaunchConfig.securityGroups
                 termPolicies = termPolicies ?: lastGroup.terminationPolicies
@@ -305,7 +309,8 @@ Group: ${loadBalancerNames}"""
                     vpcZoneIdentifier: vpcZoneIdentifier,
                     spotPrice: spotPrice,
                     ebsOptimized: ebsOptimized,
-                    tags: filteredTags
+                    tags: filteredTags,
+                    blockDeviceMappings: blockDeviceMappings
             )
             def operation = pushService.startGroupCreate(options)
             flash.message = "${operation.task.name} has been started."
