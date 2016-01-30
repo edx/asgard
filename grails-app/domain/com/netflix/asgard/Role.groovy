@@ -17,13 +17,61 @@ package com.netflix.asgard
 
 class Role {
 
-    String authority
-
+	static auditable = true
+	
+	String name
+	//User createdBy
+	//Date dateCreated
+	String authority
+	
+	static hasMany = [ users: User, permissions: String ]
+	static belongsTo = User
+	
     static mapping = {
         cache true
     }
 
     static constraints = {
-        authority blank: false, unique: true
+        authority nullable: true, blank: true, unique: true
     }
+	
+	private static Role publicRole = null
+	private static Role authRole = null
+	private static Role adminRole = null
+	
+	static Role getAdminRole() {
+		if (! adminRole) {
+			adminRole = Role.findByName('admin')
+			if (! adminRole) {
+				adminRole = new Role(name: 'admin').addToPermissions('*').save(flush: true, failOnError: true)
+			}
+		}
+		return adminRole
+	}
+
+	/*
+	 * return authenticated user role with all real users assigned to (i.e. guest is not defined as authRole user)
+	 */
+	static Role getAuthRole() {
+		if (! authRole) {
+			authRole = Role.findByName('auth')
+			if (! authRole) {
+				authRole = new Role(name: 'auth').save(flush: true, failOnError: true)
+			}
+		}
+		return authRole
+	}
+
+	/*
+	 * return public role with all system users assigned to
+	 */
+	static Role getPublicRole() {
+		if (! publicRole) {
+			publicRole = Role.findByName('public')
+			if (! publicRole) {
+				publicRole = new Role(name: 'public').save(flush: true, failOnError: true)
+			}
+		}
+		return publicRole
+	}
 }
