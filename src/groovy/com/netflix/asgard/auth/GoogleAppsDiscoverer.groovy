@@ -37,6 +37,7 @@ public class GoogleAppsDiscoverer {
         this.domain = domain
     }
 
+    @Override
     protected ConsumerManager createManager() throws ConsumerException {
         ConsumerManager m = new ConsumerManager()
         m.setDiscovery(new Discovery() {

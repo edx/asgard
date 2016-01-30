@@ -179,6 +179,9 @@ grails.project.dependency.resolution = {
         compile ':shiro:1.2.1'
         compile ":standalone:1.1.1"
 
+        compile ":resources:1.2-RC1"
+		compile ":jquery:1.8.0"
+
         runtime ":cors:1.0.4"
         runtime ':oauth:2.6.1'
 
