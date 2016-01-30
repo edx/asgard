@@ -111,7 +111,7 @@ class NewrelicService implements InitializingBean {
         if (play == "edxapp") {
             play = play + "-lms"
         }
-        
+
         return "${environment}-${deployment}-${play}"
 
     }

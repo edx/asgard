@@ -154,7 +154,7 @@ class GoogleOpenIdConnectAuthenticationProvider implements AuthenticationProvide
 //                    getText(requestProperties: [Authorization: "Bearer " + t.token])
 //
 //            def googleResponse = (new JsonSlurper()).parseText(json)
-        
+
             this.principal = 'none@edx.org'
             this.credentials = t
             this.valid = true

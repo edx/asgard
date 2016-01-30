@@ -1001,7 +1001,7 @@ class ConfigService {
    * values, these reservation types will be removed from the total count of reservations within the
    * AwsEc2Service. Otherwise, all reservation types will be returned.
    */
-  
+
   List<String> getReservationOfferingTypeFilters(){
     grailsApplication.config.cloud?.reservationOfferingTypeFilters ?: []
   }
@@ -1121,7 +1121,7 @@ class ConfigService {
     String getGithubApiOrganization() {
 		grailsApplication.config.oauth?.providers?.github?.extraArgs?.org ?: null
 	}
-	
+
     String getGithubApiOrganizationId() {
         grailsApplication.config.oauth?.providers?.github?.extraArgs?.orgId ?: null
 	}
