@@ -66,7 +66,6 @@ grails.project.dependency.resolution = {
 
     repositories {
         inherits true // Whether to inherit repository definitions from plugins
-
         grailsPlugins()
         grailsHome()
         mavenLocal()
@@ -184,7 +183,7 @@ grails.project.dependency.resolution = {
 		compile ":jquery:1.8.0"
 
         runtime ":cors:1.0.4"
-        runtime ':oauth:2.0.1'
+        runtime ':oauth:2.6.1'
 
         test ':code-coverage:2.0.3-3'
     }
