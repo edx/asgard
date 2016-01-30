@@ -111,8 +111,8 @@ class HostedZoneControllerSpec extends Specification {
             e.statusCode = 503
             throw e
         }
-        controller.flash.message == 'Status Code: 503, AWS Service: Route53, AWS Request ID: BOOGIEBOOGIE, ' +
-                'AWS Error Code: DontLikeYou, AWS Error Message: Sorry, pal.'
+        controller.flash.message == 'Sorry, pal. (Service: Route53; Status Code: 503; ' +
+                'Error Code: DontLikeYou; Request ID: BOOGIEBOOGIE)'
         response.redirectUrl == '/hostedZone/create?name=test.example.com'
         0 * _
     }
@@ -149,16 +149,16 @@ class HostedZoneControllerSpec extends Specification {
     def 'should add a resource record set to a hosted zone'() {
 
         ResourceRecordSetCommand cmd = new ResourceRecordSetCommand(hostedZoneId: 'ZATANNA',
-                resourceRecordSetName: 'magic.example.com.', type: 'CNAME', setIdentifier: 'magic repo us-west-2 A',
-                weight: 50, resourceRecordSetRegion: 'us-west-2', ttl: 300, resourceRecords: '''\
+        resourceRecordSetName: 'magic.example.com.', type: 'CNAME', setIdentifier: 'magic repo us-west-2 A',
+        weight: 50, resourceRecordSetRegion: 'us-west-2', ttl: 300, resourceRecords: '''\
                         ns91.example.com
                         ns92.example.com
                         '''.stripIndent(), aliasTarget: 'brucewayne.elb.amazonaws.net',
-                comment: 'Enchanted DNS entry')
+        comment: 'Enchanted DNS entry')
         ResourceRecordSet recordSet = new ResourceRecordSet(name: 'magic.example.com.', type: 'CNAME',
-                setIdentifier: 'magic repo us-west-2 A', weight: 50, region: 'us-west-2', tTL: 300,
-                resourceRecords: ['ns91.example.com', 'ns92.example.com'].collect { new ResourceRecord(it) },
-                aliasTarget: new AliasTarget('ZATANNA', 'brucewayne.elb.amazonaws.net'))
+        setIdentifier: 'magic repo us-west-2 A', weight: 50, region: 'us-west-2', tTL: 300,
+        resourceRecords: ['ns91.example.com', 'ns92.example.com'].collect { new ResourceRecord(it) },
+        aliasTarget: new AliasTarget('ZATANNA', 'brucewayne.elb.amazonaws.net'))
         String msg = 'DNS CREATE change submitted. ChangeInfo: {Id: ETATIVELREH,Status: PENDING,Comment: Good}'
 
         when:
@@ -175,7 +175,7 @@ class HostedZoneControllerSpec extends Specification {
     def 'should handle failed attempt to create a new resource record set'() {
 
         ResourceRecordSetCommand cmd = new ResourceRecordSetCommand(hostedZoneId: 'ZATANNA',
-                resourceRecordSetName: 'plain.example.com.')
+        resourceRecordSetName: 'plain.example.com.')
         controller.params.hostedZoneId = 'ZATANNA'
         controller.params.resourceRecordSetName = 'plain.example.com.'
         ResourceRecordSet recordSet = new ResourceRecordSet(name: 'plain.example.com.')
@@ -195,8 +195,8 @@ class HostedZoneControllerSpec extends Specification {
         }
         controller.flash.message == 'Could not add resource record set: ' +
                 'com.amazonaws.services.route53.model.InvalidInputException: ' +
-                'Status Code: 503, AWS Service: Route53, AWS Request ID: BOOGIEBOOGIE, ' +
-                'AWS Error Code: DontLikeYou, AWS Error Message: Sorry, pal.'
+                'Sorry, pal. (Service: Route53; Status Code: 503; Error Code: ' +
+                'DontLikeYou; Request ID: BOOGIEBOOGIE)'
         response.redirectUrl ==
                 '/hostedZone/prepareResourceRecordSet?hostedZoneId=ZATANNA&resourceRecordSetName=plain.example.com.'
         0 * _
@@ -205,15 +205,15 @@ class HostedZoneControllerSpec extends Specification {
     def 'should delete a resource record set'() {
 
         ResourceRecordSetCommand cmd = new ResourceRecordSetCommand(hostedZoneId: 'ZATANNA',
-                resourceRecordSetName: 'magic.example.com.', type: 'CNAME', setIdentifier: 'magic repo us-west-2 A',
-                weight: 50, resourceRecordSetRegion: 'us-west-2', ttl: 300, resourceRecords: '''\
+        resourceRecordSetName: 'magic.example.com.', type: 'CNAME', setIdentifier: 'magic repo us-west-2 A',
+        weight: 50, resourceRecordSetRegion: 'us-west-2', ttl: 300, resourceRecords: '''\
                         ns91.example.com
                         ns92.example.com
                         '''.stripIndent()
         )
         ResourceRecordSet recordSet = new ResourceRecordSet(name: 'magic.example.com.', type: 'CNAME',
-                setIdentifier: 'magic repo us-west-2 A', weight: 50, region: 'us-west-2', tTL: 300,
-                resourceRecords: ['ns91.example.com', 'ns92.example.com'].collect { new ResourceRecord(it) }
+        setIdentifier: 'magic repo us-west-2 A', weight: 50, region: 'us-west-2', tTL: 300,
+        resourceRecords: ['ns91.example.com', 'ns92.example.com'].collect { new ResourceRecord(it) }
         )
         String msg = 'DNS DELETE change submitted. ChangeInfo: {Id: EKOMSDNASRORRIM,Status: PENDING,Comment: Good}'
 
@@ -230,15 +230,15 @@ class HostedZoneControllerSpec extends Specification {
 
     def 'should handle failure to delete a resource record set'() {
         ResourceRecordSetCommand cmd = new ResourceRecordSetCommand(hostedZoneId: 'ZATANNA',
-                resourceRecordSetName: 'magic.example.com.', type: 'CNAME', setIdentifier: 'magic repo us-west-2 A',
-                weight: 50, resourceRecordSetRegion: 'us-west-2', ttl: 300, resourceRecords: '''\
+        resourceRecordSetName: 'magic.example.com.', type: 'CNAME', setIdentifier: 'magic repo us-west-2 A',
+        weight: 50, resourceRecordSetRegion: 'us-west-2', ttl: 300, resourceRecords: '''\
                         ns91.example.com
                         ns92.example.com
                         '''.stripIndent()
         )
         ResourceRecordSet recordSet = new ResourceRecordSet(name: 'magic.example.com.', type: 'CNAME',
-                setIdentifier: 'magic repo us-west-2 A', weight: 50, region: 'us-west-2', tTL: 300,
-                resourceRecords: ['ns91.example.com', 'ns92.example.com'].collect { new ResourceRecord(it) }
+        setIdentifier: 'magic repo us-west-2 A', weight: 50, region: 'us-west-2', tTL: 300,
+        resourceRecords: ['ns91.example.com', 'ns92.example.com'].collect { new ResourceRecord(it) }
         )
 
         when:
@@ -256,8 +256,9 @@ class HostedZoneControllerSpec extends Specification {
         }
         controller.flash.message == 'Could not delete resource record set: ' +
                 'com.amazonaws.services.route53.model.InvalidInputException: ' +
-                'Status Code: 503, AWS Service: Route53, AWS Request ID: BOOGIEBOOGIE, ' +
-                'AWS Error Code: DontLikeYou, AWS Error Message: Sorry, pal.'
+                'Sorry, pal. (Service: Route53; Status Code: 503; ' +
+                'Error Code: DontLikeYou; Request ID: BOOGIEBOOGIE)'
+
         response.redirectUrl == '/hostedZone/show/ZATANNA'
         0 * _
         noExceptionThrown()

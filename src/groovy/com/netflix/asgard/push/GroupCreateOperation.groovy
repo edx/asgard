@@ -17,6 +17,7 @@ package com.netflix.asgard.push
 
 import com.amazonaws.services.autoscaling.model.AutoScalingGroup
 import com.amazonaws.services.autoscaling.model.LaunchConfiguration
+import com.amazonaws.services.autoscaling.model.LifecycleHook
 import com.google.common.collect.Sets
 import com.netflix.asgard.CreateAutoScalingGroupResult
 import com.netflix.asgard.EntityType
@@ -39,6 +40,7 @@ class GroupCreateOperation extends AbstractPushOperation {
     def awsEc2Service
     def discoveryService
     def newrelicService
+    def awsClientService
     private final GroupCreateOptions options
     Task task
 
@@ -64,7 +66,7 @@ class GroupCreateOperation extends AbstractPushOperation {
         String clusterName = Relationships.clusterFromGroupName(options.common.groupName)
         String msg = "Creating auto scaling group '$options.common.groupName', " +
                 "min $options.minSize, max $options.maxSize, traffic ${options.initialTraffic.name().toLowerCase()}"
-        task = taskService.startTask(options.common.userContext, msg, { Task task ->            
+        task = taskService.startTask(options.common.userContext, msg, { Task task ->
             task.email = applicationService.getEmailFromApp(options.common.userContext, options.common.appName)
             thisOperation.task = task
             task.log("Group '${options.common.groupName}' will start with 0 instances")
@@ -77,7 +79,7 @@ class GroupCreateOperation extends AbstractPushOperation {
                     withTerminationPolicies(options.terminationPolicies).
                     withVPCZoneIdentifier(options.vpcZoneIdentifier).
                     withTags(options.tags)
-					
+
             LaunchConfiguration launchConfigTemplate = new LaunchConfiguration().withImageId(options.common.imageId).
                     withKernelId(options.kernelId).withInstanceType(options.common.instanceType).
                     withKeyName(options.keyName).withRamdiskId(options.ramdiskId).
@@ -104,15 +106,17 @@ ${groupTemplate.loadBalancerNames} and result ${result}"""
                 awsAutoScalingService.createScalingPolicies(options.common.userContext, options.scalingPolicies, task)
                 awsAutoScalingService.createScheduledActions(options.common.userContext, options.scheduledActions, task)
 
+                awsAutoScalingService.createLifecycleHooks(options.common.userContext,
+                        options.common.groupName, options.hooks, task)
                 // If the user wanted any instances then start a resize operation.
                 if (options.minSize > 0 || options.desiredCapacity > 0) {
                     GroupResizeOperation operation = new GroupResizeOperation(userContext: options.common.userContext,
-                            autoScalingGroupName: options.common.groupName,
-                            eventualMin: options.minSize, newMin: options.minSize,
-                            desiredCapacity: options.desiredCapacity, newMax: options.maxSize,
-                            batchSize: options.batchSize, initialTraffic: options.initialTraffic,
-                            checkHealth: options.common.checkHealth, afterBootWait: options.common.afterBootWait,
-                            task: task
+                    autoScalingGroupName: options.common.groupName,
+                    eventualMin: options.minSize, newMin: options.minSize,
+                    desiredCapacity: options.desiredCapacity, newMax: options.maxSize,
+                    batchSize: options.batchSize, initialTraffic: options.initialTraffic,
+                    checkHealth: options.common.checkHealth, afterBootWait: options.common.afterBootWait,
+                    task: task
                     )
                     operation.proceed()
                 }
@@ -125,7 +129,7 @@ ${groupTemplate.loadBalancerNames} and result ${result}"""
                     }
                 }
                 newrelicService.notifyOfAsgCreate(options.common.userContext,
-                    awsAutoScalingService.getAutoScalingGroup(options.common.userContext,
+                        awsAutoScalingService.getAutoScalingGroup(options.common.userContext,
                         result.autoScalingGroupName))
             } else {
                 fail(result.toString())

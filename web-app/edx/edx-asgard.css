@@ -436,6 +436,24 @@ a.resize {
   color: #FFFFFF;
 }
 
+.buttons a.deploy,
+.buttons button.deploy {
+  visible: false;
+  background-image: none;
+  background-repeat: no-repeat;
+  background-position: 10px center;
+  background-color: #006C00;
+  box-shadow: 0 2px 1px 0 #ddd;
+  color: #FFFFFF;
+}
+
+.buttons a.deploy:hover,
+.buttons button.deploy:hover {
+  visible: false;
+  background-color: #60BC61 !important;
+  color: #FFFFFF;
+}
+
 .buttons a.instanceBalance,
 .buttons button.instanceBalance div {
   background: none;

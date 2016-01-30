@@ -38,9 +38,11 @@
       </g:if>
       <g:else>
         <g:if test="${!runningTasks && !requireLoginForEdit}">
+        <!--
           <div class="buttons">
             <g:link class="deploy" controller="ng" action=" " fragment="deployment/new/${params.id}">Prepare Automated Deployment</g:link>
           </div>
+          -->
         </g:if>
         <p>
           Recommended next step: <br/>

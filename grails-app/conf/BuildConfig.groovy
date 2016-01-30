@@ -97,7 +97,7 @@ grails.project.dependency.resolution = {
 				'org.openid4java:openid4java:0.9.8',
 			
                 // Amazon Web Services programmatic interface. Transitive dependency of glisten, but also used directly.
-                'com.amazonaws:aws-java-sdk:1.7.5',
+                'com.amazonaws:aws-java-sdk:1.8.7',
 
                 // Enables publication of a health check URL for deploying Asgard, and an on/off switch for activities.
                 // Transitive dependencies include:
