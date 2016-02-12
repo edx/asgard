@@ -792,6 +792,20 @@ class ConfigService {
     }
 
     /**
+     * @return true if deletes (via the UI) should be disabled
+     */
+    boolean getDisableUIDeletes() {
+        grailsApplication.config.disableUIDeletes ?: false
+    }
+
+    /**
+     * @return true if updates (via the UI) should be disabled
+     */
+    boolean getDisableUIUpdates()  {
+        grailsApplication.config.disableUIUpdates ?: false
+    }
+
+    /**
      * Gets a list of encryption keys for hashing api keys. The first item is used as the current key for new requests.
      * The remaining keys in the list are used to validate tokens that are already in circulation. This provides a way
      * to gracefully retire keys.
@@ -987,7 +1001,7 @@ class ConfigService {
    * values, these reservation types will be removed from the total count of reservations within the
    * AwsEc2Service. Otherwise, all reservation types will be returned.
    */
-  
+
   List<String> getReservationOfferingTypeFilters(){
     grailsApplication.config.cloud?.reservationOfferingTypeFilters ?: []
   }
@@ -1107,7 +1121,7 @@ class ConfigService {
     String getGithubApiOrganization() {
 		grailsApplication.config.oauth?.providers?.github?.extraArgs?.org ?: null
 	}
-	
+
     String getGithubApiOrganizationId() {
         grailsApplication.config.oauth?.providers?.github?.extraArgs?.orgId ?: null
 	}

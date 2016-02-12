@@ -28,23 +28,23 @@
   <link rel="stylesheet" href="${resource(dir: 'edx', file: 'edx-asgard.css')}?v=${build}"/>
   <link rel="stylesheet" href="${resource(dir: 'js/select2-3.2', file: 'select2.css')}?v=${build}"/>
   <!--[if IE]>
-    <link rel="stylesheet" href="${resource(dir: 'css', file: 'ie.css')}?v=${build}"/>
+    <link rel="stylesheet" href="${assetPath(src: 'ie.css')}?v=${build}"/>
   <![endif]-->
-  <link rel="shortcut icon" href="${resource(dir: '/', file: 'favicon.ico')}" type="image/x-icon"/>
+  <asset:link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
   <g:layoutHead/>
 </head>
 <body ng-app="asgardApp" class="${envStyle} ${occasion.styleClass}">
 
 <g:if test="${ieWithoutChromeFrame}">
 <!--[if IE]>
-  <script type="text/javascript" src="${resource(dir: 'js', file: 'chromeframeinstall.js')}?v=${build}"></script>
+  <script type="text/javascript" src="${assetPath(src: 'chromeframeinstall.js')}?v=${build}"></script>
   <div class="messageForIeUsers">
   Please use Chrome, Firefox, or Safari. IE is not supported. If you must use IE then install Google Chrome Frame.
   </div>
 <![endif]-->
 </g:if>
   <div id="spinner" class="spinner" style="display:none;">
-    <img src="${resource(dir: 'images', file: 'spinner.gif')}" alt="Spinner"/>
+    <asset:image src="spinner.gif" alt="Spinner" />
   </div>
   <div class="titlebar">
     <div class="header">
@@ -59,7 +59,7 @@
         <form action="/" method="GET">
           <g:select title="Switch to a different Amazon region" name="region" class="noSelect2" id="regionSwitcher"
                     value="${region.code}" from="${regions}" optionKey="code" optionValue="description"/><br/>
-          <img src="${resource(dir: 'images/worldmap', file: region.mapImageFileName)}" title="${region.description} is your current region"/>
+          <asset:image src="worldmap/${region.mapImageFileName}" title="${region.description} is your current region"/>
         </form>
       </div>
       <div class="ticket" title="${fullTicketLabel} number for logging change actions.">
@@ -169,12 +169,30 @@
       requireLoginForEdit: ${requireLoginForEdit}
     };
   </script>
-  <script type="text/javascript" src="${resource(dir: 'js', file: 'jquery.js')}?v=${build}"></script>
-  <script defer type="text/javascript" src="${resource(dir: 'js/select2-3.2', file: 'select2.min.js')}?v=${build}"></script>
-  <script defer type="text/javascript" src="${resource(dir: 'js', file: 'custom.js')}?v=${build}"></script>
+  <script type="text/javascript" src="${assetPath(src: 'jquery.js')}?v=${build}"></script>
+  <script defer type="text/javascript" src="${assetPath(src: 'select2-3.2/select2.min.js')}?v=${build}"></script>
+  <script defer type="text/javascript" src="${assetPath(src: 'custom.js')}?v=${build}"></script>
   <g:if test="${bleskJavaScriptUrl}">
     <script defer type="text/javascript" src="${bleskJavaScriptUrl}?v=${build}"></script>
   </g:if>
+  <g:if test="${disableUIDeletes == true}">
+    <script type="text/javascript">
+      jQuery("button.delete").attr("disabled", true).attr("name", "__disabled");
+    </script>
+  </g:if>
+
+  <g:if test="${disableUIUpdates == true}">
+     <script type="text/javascript">
+       jQuery("a.edit, a.clean, a.create, a[class*='push'], a[class*='attach']")
+        .not(".keep")
+        .addClass('disabled');
+
+       jQuery("button.save, button.create, button[class*='Edit'], button[class*='push'], button[class*='Disable'], button[class*='Enable'], button[type='submit']")
+        .not('.keep')
+        .attr("disabled", true).attr("name", "__disabled");
+     </script>
+  </g:if>
+
   <g:render template="/layouts/occasion"/>
 </body>
 </html>
