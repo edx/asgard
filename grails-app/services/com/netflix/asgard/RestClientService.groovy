@@ -225,7 +225,7 @@ class RestClientService implements InitializingBean {
         HttpPost httpPost = new HttpPost(uriPath)
         if (nameValuePairs) {
             List<NameValuePair> data = nameValuePairs.collect { new BasicNameValuePair(it.key, it.value) }
-            httpPost.setEntity(new UrlEncodedFormEntity(data))
+            httpPost.setEntity(new UrlEncodedFormEntity(data, "UTF-8"))
         }
 
         Closure marshallResponse = {
