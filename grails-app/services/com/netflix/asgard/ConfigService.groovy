@@ -762,6 +762,35 @@ class ConfigService {
     }
 
     /**
+     * @return true if deletes (via the UI) should be disabled
+     */
+    boolean getDisableUIDeletes() {
+        grailsApplication.config.disableUIDeletes ?: false
+    }
+
+    /**
+     * @return true if updates (via the UI) should be disabled
+     */
+    boolean getDisableUIUpdates()  {
+        grailsApplication.config.disableUIUpdates ?: false
+    }
+
+    /**
+     * Gets a list of encryption keys for hashing api keys. The first item is used as the current key for new requests.
+     * The remaining keys in the list are used to validate tokens that are already in circulation. This provides a way
+     * to gracefully retire keys.
+     *
+     * If no encryption keys are configured for use, then a default key is used because this isn't meant to be a
+     * serious security roadblock by any means. It's just a minor hoop to jump through in order to spoof a different
+     * user. We'll replace this lame auth system with a better one later.
+     *
+     * @return list of encryption keys, starting with the current key for new API tokens
+     */
+    List<String> getApiEncryptionKeys() {
+        grailsApplication.config.security?.apiToken?.encryptionKeys ?: []
+    }
+
+    /**
      * @return the names of the security groups that should be applied to all non-VPC deployments
      */
     List<String> getDefaultSecurityGroups() {
@@ -789,35 +818,6 @@ class ConfigService {
      */
     boolean isApiTokenEnabled() {
         grailsApplication.config.security?.apiToken?.enabled ?: false
-    }
-
-    /**
-     * @return true if deletes (via the UI) should be disabled
-     */
-    boolean getDisableUIDeletes() {
-        grailsApplication.config.disableUIDeletes ?: false
-    }
-
-    /**
-     * @return true if updates (via the UI) should be disabled
-     */
-    boolean getDisableUIUpdates()  {
-        grailsApplication.config.disableUIUpdates ?: false
-    }
-
-    /**
-     * Gets a list of encryption keys for hashing api keys. The first item is used as the current key for new requests.
-     * The remaining keys in the list are used to validate tokens that are already in circulation. This provides a way
-     * to gracefully retire keys.
-     *
-     * If no encryption keys are configured for use, then a default key is used because this isn't meant to be a
-     * serious security roadblock by any means. It's just a minor hoop to jump through in order to spoof a different
-     * user. We'll replace this lame auth system with a better one later.
-     *
-     * @return list of encryption keys, starting with the current key for new API tokens
-     */
-    List<String> getApiEncryptionKeys() {
-        grailsApplication.config.security?.apiToken?.encryptionKeys ?: []
     }
 
     /**
