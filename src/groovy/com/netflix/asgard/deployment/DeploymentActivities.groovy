@@ -25,9 +25,9 @@ import com.netflix.asgard.model.ScheduledAsgAnalysis
 /**
  * Method contracts and annotations used for the automatic deployment SWF workflow actions.
  */
-@Activities(version = "1.7")
+@Activities(version = "1.9")
 @ActivityRegistrationOptions(defaultTaskScheduleToStartTimeoutSeconds = -1L,
-        defaultTaskStartToCloseTimeoutSeconds = 300L)
+        defaultTaskStartToCloseTimeoutSeconds = 600L)
 interface DeploymentActivities {
 
     /**
@@ -105,16 +105,18 @@ interface DeploymentActivities {
      *
      * @param userContext who, where, why
      * @param asgName of the ASG to modify
+     * @return boolean representing the success of the activity
      */
-    void enableAsg(UserContext userContext, String asgName)
+    Boolean enableAsg(UserContext userContext, String asgName)
 
     /**
      * Disables scaling behavior for the ASG and traffic to its instances.
      *
      * @param userContext who, where, why
      * @param asgName of the ASG to modify
+     * @return boolean representing the success of the activity
      */
-    void disableAsg(UserContext userContext, String asgName)
+    Boolean disableAsg(UserContext userContext, String asgName)
 
     /**
      * Deletes an ASG.
@@ -143,18 +145,21 @@ interface DeploymentActivities {
      * @return indication on whether to proceed with the deployment
      */
     @ActivityRegistrationOptions(defaultTaskScheduleToStartTimeoutSeconds = -1L,
-            defaultTaskStartToCloseTimeoutSeconds = 86400L)
-    Boolean askIfDeploymentShouldProceed(String notificationDestination, String asgName, String operationDescription)
+            defaultTaskStartToCloseTimeoutSeconds = 259200L)
+    Boolean askIfDeploymentShouldProceed(UserContext userContext, String notificationDestination, String asgName,
+            String operationDescription)
 
     /**
      * Sends a notification about the status of the deployment.
      *
+     * @param userContext who, where, why
      * @param notificationDestination where deployment notifications will be sent
      * @param asgName of the ASG to modify
      * @param subject of the notification
      * @param rollbackCause textual description of the reason why an ASG is not operational, or null if it is
      */
-    void sendNotification(String notificationDestination, String asgName, String subject, String rollbackCause)
+    void sendNotification(UserContext userContext, String notificationDestination, String asgName, String subject,
+            String rollbackCause)
 
     /**
      * Starts the analysis of Auto Scaling Groups in a cluster.

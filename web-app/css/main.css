@@ -350,9 +350,7 @@ button.resize div, a.resize                   { background-image: url(../images/
 .buttons button.elastic div                   { background-image: url(../images/tango/24/tools/select-lasso.png);                                }
 .buttons button.save div                      { background-image: url(../images/tango/24/actions/document-save.png);                             }
 .buttons button.deploy div                    { background-image: url(../images/tango/24/tools/deploy.png);                                      }
-.buttons a.deploy                             { background-image: url(../images/tango/24/tools/deploy.png);                                      }
-.buttons button.proceed div                   { background-image: url(../images/tango/24/actions/media-playback-start.png);                      }
-.buttons button.rollback div                  { background-image: url(../images/tango/24/actions/media-seek-backward.png);                       }
+.buttons a.deploy                             { background-image: url(../images/tango/24/tools/deploy.png);                                       }
 .buttons button.schedule div                  { background-image: url(../images/tango/24/actions/appointment-new.png);                           }
 .buttons button.outOfService div              { background-image: url(../images/tango/24/status/weather-clear-night.png);                        }
 .buttons button.inService div                 { background-image: url(../images/tango/24/status/weather-clear.png);                              }
@@ -401,6 +399,7 @@ a.dbSecurity          { padding:  2px 2px  2px 26px; background: url(../images/t
 a.dbSnapshot          { padding:  2px 2px  2px 26px; background: url(../images/tango/16/devices/database-snapshot.png)           transparent no-repeat 5px 1px; display: inline-block; line-height: 16px; min-height: 16px; }
 a.cloudready          { padding:  2px 2px  2px 26px; background: url(../images/tango/16/emotes/face-monkey.png)                  transparent no-repeat 5px 1px; display: inline-block; line-height: 16px; min-height: 16px; }
 a.task                { padding:  2px 2px  2px 24px; background: url(../images/tango/16/actions/edit-paste.png)                  transparent no-repeat 3px 1px; display: inline-block; line-height: 17px; min-height: 17px; }
+a.deployment          { padding:  2px 2px  2px 24px; background: url(../images/tango/16/tools/deploy.png)                        transparent no-repeat 5px 1px; display: inline-block; line-height: 16px; min-height: 16px; }
 a.builds              { padding:  2px 2px  2px 22px; background: url(../images/builds.png)                                       transparent no-repeat 5px 1px; display: inline-block; line-height: 16px; min-height: 16px; }
 a.mail                { padding:  2px 2px  2px 22px; background: url(../images/tango/16/actions/mail-message-new.png)            transparent no-repeat 0   1px; display: inline-block; line-height: 16px; min-height: 16px; }
 a.jira                { padding:  2px 2px  2px 22px; background: url(../images/jira.png)                                         transparent no-repeat 0   1px; display: inline-block; line-height: 16px; min-height: 16px; }
@@ -460,12 +459,67 @@ label.choice        { padding-right: 15px; }
 table.securityGroups { width: auto; }
 td.checkbox          { text-align: center; }
 
+div.deployment { margin-bottom: 800px; }
+.deployment input[type="radio"] { margin: 3px !important; }
+.deployment div label { font-weight: normal }
+.deployment .well { margin: 5px; }
+.deployment .row { margin: 3px; }
+.deployment div h3 { margin-top: 0 }
+
+.deploymentOptions div.step { margin: 5px 0; width: 600px; }
+.deploymentOptions div.step input, .deploymentOptions div.step select { margin: 3px !important; }
+.deploymentOptions div.step h4 { padding: 0 35px; margin: 0; display: inline-block; background: no-repeat; height: 25px; }
+.deploymentOptions div.step .panel-heading { padding: 5px; }
+.deploymentOptions div.step .panel-body { padding: 5px; line-height: 22px; }
+.deploymentOptions div.step div.removeStep { padding: 8px; margin: 2px; float: right; display: inline-block; background: no-repeat url(../images/tango/16/places/user-trash.png); cursor: pointer; }
+.deploymentOptions div.step div.waiting { padding: 8px; margin: 2px; float: right; display: inline-block; background: no-repeat url(../images/spinner.gif); }
+
+.deploymentOptions div.step h4.createAsg            { background-image: url(../images/tango/24/status/network-idle.png) }
+.deploymentOptions div.step h4.wait                 { background-image: url(../images/tango/24/actions/appointment-new.png); }
+.deploymentOptions div.step h4.judgment             { background-image: url(../images/tango/24/actions/appointment-new.png); }
+.deploymentOptions div.step h4.scaling              { background-image: url(../images/tango/24/tools/resize.png); }
+.deploymentOptions div.step h4.disableAsg           { background-image: url(../images/tango/24/status/traffic-disable.png); }
+.deploymentOptions div.step h4.enableAsg            { background-image: url(../images/tango/24/status/traffic-enable.png); }
+.deploymentOptions div.step h4.cleanUp              { background-image: url(../images/tango/24/actions/edit-clear.png); }
+.deploymentOptions div.step h4.addStep              { background-image: url(../images/tango/24/places/start-here.png); }
+
+.deployment .container .row { margin: 10px 0; }
+.deployment .logMessage { margin: 0; padding: 0; line-height: 12px; }
+.deployment .selectedValues div { margin: 0 4px 4px 0; padding: 3px; border: 1px solid #999; background-color: #fff; display: inline-block; }
+
+.steps button.btn { padding: 0 10px; margin: 0 2px; height: 22px; }
+.steps button.insert { padding: 0 200px; }
+.steps .buttonPanel { text-align: center; width: 600px; background: no-repeat; }
+.steps .buttonPanel button { padding: 0 30px; background: no-repeat; background-position: 4px 2px; }
+.steps .buttonPanel button.proceed  { background-image: url(../images/tango/16/actions/media-seek-backward.png); }
+.steps .buttonPanel button.rollback { background-image: url(../images/tango/16/actions/media-playback-start.png); }
+
+.animate-repeat.ng-move,
+.animate-repeat.ng-enter,
+.animate-repeat.ng-leave {
+    transition: all linear 0.5s;
+}
+
+.animate-repeat.ng-leave.ng-leave-active,
+.animate-repeat.ng-move,
+.animate-repeat.ng-enter {
+    opacity:0;
+    max-height:0;
+}
+
+.animate-repeat.ng-leave,
+.animate-repeat.ng-move.ng-move-active,
+.animate-repeat.ng-enter.ng-enter-active {
+    opacity:1;
+    max-height:100px;
+}
+
 /* GROUP REPLACING PUSH */
 .cluster h3            {                  margin-bottom: 8px; }
 .cluster ul.tasks      { padding-left: 0; margin-bottom: 10px; list-style-type: none; }
 .groupReplacingPush    { padding: 0;      margin: 0; clear: both; }
 .groupReplacingPush li.clusterAsgForm { padding: 10px;   margin-right: 14px; margin-bottom: 14px; display: inline-block; float: left; max-width: 340px; border-style: solid; border-color: #CCC #999 #999 #CCC; border-width: 1px 2px 2px 1px; }
-.cluster div.intro          { float: left; margin-right: 40px; }
+.cluster div.intro          { float: left; margin-right: 40px; width: 100%}
 .cluster table.reservations { float: left; margin-bottom: 14px; width: auto; }
 .groupReplacingPush .batchResizeContainer { display: none; padding: 0 8px; }
 .groupReplacingPush li.disabledGroup,
@@ -480,15 +534,12 @@ td.checkbox          { text-align: center; }
 .groupReplacingPush .filter                      { width: 60px;      }
 .groupReplacingPush .name                        { white-space: normal; min-width: 86px; }
 
-.groupReplacingPush li.deploymentWorkflowOptions         { max-width: 500px; }
-.groupReplacingPush li.deploymentWorkflowOptions .name   { min-width: 280px; }
-
 #showAdvancedOptionsToCreateFastProperty   { margin-left: 230px; }
 
                    span.toggle       { background: url(../images/tango/16/actions/list-remove.png) transparent no-repeat 0 50%; padding: 0 2px 0 17px; line-height: 16px; }
 .hideAdvancedItems span.toggle       { background-image: url(../images/tango/16/actions/list-add.png); }
 .hideAdvancedItems .advancedItems,
-.hideAdvancedItems tr.advanced       { display: none; }
+.hideAdvancedItems .advanced       { display: none; }
 
 .tip .template { display: none; }
 .tip img       { margin-left: 4px; cursor: help; }

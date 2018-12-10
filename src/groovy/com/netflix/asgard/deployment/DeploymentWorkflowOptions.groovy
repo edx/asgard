@@ -15,6 +15,7 @@
  */
 package com.netflix.asgard.deployment
 
+import com.netflix.asgard.deployment.steps.DeploymentStep
 import groovy.transform.Canonical
 
 /**
@@ -28,37 +29,7 @@ import groovy.transform.Canonical
     /** Endpoint where deployment notifications will be sent */
     String notificationDestination
 
-    /** Delay before deployment will begin */
-    int delayDurationMinutes
-
-    /** Specify if canary testing be done which will scale the ASG up to a minimal number of instances */
-    Boolean doCanary
-
-    /** Number of instances used for canary testing */
-    int canaryCapacity
-
-    /** Time limit for having healthy instances at the canary capacity */
-    int canaryStartUpTimeoutMinutes
-
-    /** Time allowed for the canary test */
-    int canaryJudgmentPeriodMinutes
-
-    /** How to proceed after the canary test */
-    ProceedPreference scaleUp
-
-    /** Time limit for having healthy instances at the desired capacity */
-    int desiredCapacityStartUpTimeoutMinutes
-
-    /** Time allowed for the desired capacity assessment */
-    int desiredCapacityJudgmentPeriodMinutes
-
-    /** How to proceed after the desired capacity assessment */
-    ProceedPreference disablePreviousAsg
-
-    /** Time allowed for the full traffic assessment */
-    int fullTrafficJudgmentPeriodMinutes
-
-    /** How to proceed after the full traffic assessment */
-    ProceedPreference deletePreviousAsg
+    /** Ordered steps that describe a deployment */
+    List<DeploymentStep> steps
 
 }

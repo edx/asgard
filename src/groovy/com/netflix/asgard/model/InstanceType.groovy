@@ -20,6 +20,9 @@ enum InstanceType {
     T1Micro("t1.micro"),
     M1Small("m1.small"),
     M1Medium("m1.medium"),
+    T2Micro("t2.micro"),
+    T2Small("t2.small"),
+    T2Medium("t2.medium"),
     M1Large("m1.large"),
     M1Xlarge("m1.xlarge"),
     M3Medium("m3.medium"),
@@ -46,7 +49,12 @@ enum InstanceType {
     Cc14xlarge("cc1.4xlarge"),
     Cc28xlarge("cc2.8xlarge"),
     G22xlarge("g2.2xlarge"),
-    Cg14xlarge("cg1.4xlarge")
+    Cg14xlarge("cg1.4xlarge"),
+    R3Large("r3.large"),
+    R3Xlarge("r3.xlarge"),
+    R32xlarge("r3.2xlarge"),
+    R34xlarge("r3.4xlarge"),
+    R38xlarge("r3.8xlarge")
 
     private String value
 

@@ -15,11 +15,14 @@
  */
 package com.netflix.asgard.model
 
+import com.amazonaws.services.simpleworkflow.flow.JsonDataConverter
 import com.amazonaws.services.simpleworkflow.model.HistoryEvent
 import com.amazonaws.services.simpleworkflow.model.WorkflowExecutionInfo
 import com.netflix.asgard.EntityType
 import com.netflix.asgard.Region
 import com.netflix.asgard.Task
+import com.netflix.asgard.deployment.DeploymentWorkflowOptions
+import com.netflix.asgard.deployment.steps.DeploymentStep
 import com.netflix.glisten.HistoryAnalyzer
 import com.netflix.glisten.LogMessage
 import groovy.transform.Canonical
@@ -61,7 +64,8 @@ import groovy.transform.Canonical
             List<LogMessage> logMessages = HistoryAnalyzer.of(events).logMessages
             boolean isDone = executionInfo.closeTimestamp != null
             String currentOperation = isDone || !logMessages ? '' : logMessages.last().text
-            Date lastTime = isDone ? executionInfo.closeTimestamp : logMessages.last().timestamp
+            Date lastUpdate = logMessages ? logMessages.last().timestamp : executionInfo.startTimestamp
+            Date lastTime = isDone ? executionInfo.closeTimestamp : lastUpdate
             task.with {
                 log = logMessages*.toString()
                 updateTime = lastTime
@@ -77,6 +81,12 @@ import groovy.transform.Canonical
      * @return deployment that represents the workflow execution
      */
     Deployment asDeployment() {
+        List<DeploymentStep> steps = []
+        def input = getInput()
+        if (input) {
+            DeploymentWorkflowOptions deploymentWorkflowOptions = input[1] // get the second argument to the workflow
+            steps = deploymentWorkflowOptions.steps
+        }
         SwfWorkflowTags swfWorkflowTags = new SwfWorkflowTags()
         swfWorkflowTags.withTags(executionInfo.tagList)
         String status = executionInfo.closeStatus?.toLowerCase() ?: 'running'
@@ -87,6 +97,14 @@ import groovy.transform.Canonical
         Region region = swfWorkflowTags?.user?.region
         new Deployment(swfWorkflowTags.id, clusterName, region, executionInfo.execution, swfWorkflowTags.desc,
                 swfWorkflowTags?.user?.username, executionInfo.startTimestamp, lastTime, status,
-                logMessages*.toString())
+                logMessages*.toString(), steps)
     }
+
+    private Object getInput() {
+        if (!events) { return [] }
+        JsonDataConverter dataConverter = new JsonDataConverter()
+        String workflowInputString = events[0].workflowExecutionStartedEventAttributes?.input
+        workflowInputString ? dataConverter.fromData(workflowInputString, Object) : null
+    }
+
 }

@@ -29,6 +29,16 @@ class ConfigServiceSpec extends Specification {
         configService.getEbsVolumeDeviceNamesForLaunchConfigs() == ['/dev/sdb', '/dev/sdc']
     }
 
+    def 'should return false instance monitoring'() {
+        expect:
+        configService.enableInstanceMonitoring == false
+    }
+
+    def 'should return reserved instance filter if provided'(){
+        expect:
+        configService.getReservationOfferingTypeFilters() == []
+    }
+
     def 'should return correct excluded launch permissions for mass delete'() {
         expect:
         configService.getExcludedLaunchPermissionsForMassDelete() == [Mocks.SEG_AWS_ACCOUNT_ID] as Set

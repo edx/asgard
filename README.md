@@ -6,7 +6,7 @@ Asgard is a web-based tool for managing cloud-based applications and infrastruct
 
 ## DOWNLOAD
 
-Grab the [latest binary release](http://netflix.box.com/asgard)
+Grab the [latest binary release](https://github.com/Netflix/asgard/releases)
 
 ## DETAILS
 
@@ -18,7 +18,7 @@ Please see the [wiki](https://github.com/Netflix/asgard/wiki).
 
 ## LICENSE
 
-Copyright 2012 Netflix, Inc.
+Copyright 2014 Netflix, Inc.
 
 Licensed under the Apache License, Version 2.0 (the “License”); you may not use this file except in
 compliance with the License. You may obtain a copy of the License at
@@ -28,3 +28,4 @@ Unless required by applicable law or agreed to in writing, software distributed 
 distributed on an “AS IS” BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
 implied. See the License for the specific language governing permissions and limitations under the
 License.
+

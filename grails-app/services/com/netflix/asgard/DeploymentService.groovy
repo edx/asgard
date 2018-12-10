@@ -15,6 +15,9 @@
  */
 package com.netflix.asgard
 
+import com.amazonaws.services.simpledb.model.Attribute
+import com.amazonaws.services.simpledb.model.Item
+import com.amazonaws.services.simpledb.model.ReplaceableAttribute
 import com.amazonaws.services.simpleworkflow.flow.WorkflowClientExternal
 import com.amazonaws.services.simpleworkflow.model.ChildPolicy
 import com.amazonaws.services.simpleworkflow.model.WorkflowExecutionInfo
@@ -34,7 +37,43 @@ class DeploymentService {
     def applicationService
     def awsEc2Service
     def awsSimpleWorkflowService
+    def awsSimpleDbService
     def flowService
+
+    static final String DOMAIN = 'ASGARD_SWF_TOKEN_FOR_DEPLOYMENT'
+    static final String TOKEN = 'token'
+
+    /**
+     * Retrieves the token needed for manual completion of the judgment SWF activity in a deployment workflow.
+     *
+     * @param deploymentId identifies the specific deployment
+     * @return token needed to complete SWF activity
+     */
+    String getManualTokenForDeployment(String deploymentId) {
+        Item item = awsSimpleDbService.selectOne(DOMAIN, deploymentId)
+        Attribute attribute = item?.attributes?.find { it.name == TOKEN }
+        attribute?.value
+    }
+
+    /**
+     * Records the token needed for manual completion of the judgment SWF activity in a deployment workflow.
+     *
+     * @param deploymentId identifies the specific deployment
+     * @param token needed to complete SWF activity
+     */
+    void setManualTokenForDeployment(String deploymentId, String token) {
+        awsSimpleDbService.save(DOMAIN, deploymentId,
+                [new ReplaceableAttribute(name: TOKEN, value: token, replace: true)])
+    }
+
+    /**
+     * Removes the token needed for manual completion of the judgment SWF activity in a deployment workflow.
+     *
+     * @param deploymentId identifies the specific deployment
+     */
+    void removeManualTokenForDeployment(String deploymentId) {
+        awsSimpleDbService.delete(DOMAIN, deploymentId)
+    }
 
     /**
      * Get all running deployments.
@@ -72,6 +111,9 @@ class DeploymentService {
                         Deployment deployment = awsSimpleWorkflowService.
                                 getWorkflowExecutionInfoByTaskId(id)?.asDeployment()
                         if (!deployment) { throw new IllegalArgumentException("There is no deployment with id ${id}.") }
+                        if (!deployment.isDone()) {
+                            deployment.token = getManualTokenForDeployment(id)
+                        }
                         deployment
                     },
                     firstDelayMillis: 300
@@ -103,12 +145,11 @@ class DeploymentService {
      * @param asgOverrides specify changes to the template auto scaling group
      * @return the unique ID of the workflow execution that is starting
      */
-    public String startDeployment(UserContext userContext, String clusterName,
-            DeploymentWorkflowOptions deploymentOptions, LaunchConfigurationBeanOptions lcOverrides,
-            AutoScalingGroupBeanOptions asgOverrides) {
+    public String startDeployment(UserContext userContext, DeploymentWorkflowOptions deploymentOptions,
+            LaunchConfigurationBeanOptions lcOverrides, AutoScalingGroupBeanOptions asgOverrides) {
 
         SwfWorkflow<DeploymentWorkflow> workflow = flowService.getNewWorkflowClient(userContext,
-                DeploymentWorkflow, new Link(EntityType.cluster, clusterName))
+                DeploymentWorkflow, new Link(EntityType.cluster, deploymentOptions.clusterName))
         workflow.client.deploy(userContext, deploymentOptions, lcOverrides, asgOverrides)
         workflow.tags.id
     }
@@ -116,12 +157,14 @@ class DeploymentService {
     /**
      * Checks whether the specified cluster has at least one open workflow execution.
      *
+     * @param region that the cluster is in
      * @param clusterName the name of the cluster in question
      * @return deployment that is currently operating on the cluster, or null if none found
      */
-    Deployment getRunningDeploymentForCluster(String clusterName) {
+    Deployment getRunningDeploymentForCluster(Region region, String clusterName) {
         Link link = new Link(type: EntityType.cluster, id: clusterName)
-        WorkflowExecutionInfo executionInfo = awsSimpleWorkflowService.getOpenWorkflowExecutionForObjectLink(link)
+        WorkflowExecutionInfo executionInfo = awsSimpleWorkflowService.getOpenWorkflowExecutionForObjectLink(region,
+                link)
         if (executionInfo == null) { return null }
         new WorkflowExecutionBeanOptions(executionInfo).asDeployment()
     }

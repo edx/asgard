@@ -18,13 +18,14 @@ package com.netflix.asgard
 import com.amazonaws.services.autoscaling.model.Alarm
 import com.amazonaws.services.autoscaling.model.AutoScalingGroup
 import com.amazonaws.services.autoscaling.model.Instance
+import com.amazonaws.services.autoscaling.model.InstanceMonitoring
 import com.amazonaws.services.autoscaling.model.LaunchConfiguration
 import com.amazonaws.services.autoscaling.model.ScalingPolicy
 import com.amazonaws.services.cloudwatch.model.MetricAlarm
 import com.amazonaws.services.ec2.model.GroupIdentifier
 import com.amazonaws.services.ec2.model.Image
-import com.amazonaws.services.ec2.model.SecurityGroup
 import com.amazonaws.services.elasticloadbalancing.model.LoadBalancerDescription
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.google.common.collect.ImmutableSet
 import com.google.common.collect.Multiset
 import com.google.common.collect.TreeMultiset
@@ -59,6 +60,8 @@ class AutoScalingControllerSpec extends Specification {
         controller.awsLoadBalancerService = awsLoadBalancerService
         controller.cloudReadyService = cloudReadyService
         controller.configService = configService
+
+        configService.getEnableInstanceMonitoring() >> false
     }
 
     void setupHeavyWeightMocks() {
@@ -326,12 +329,47 @@ class AutoScalingControllerSpec extends Specification {
                 ['akms', 'helloworld', 'helloworld-frontend', 'helloworld-asgardtest', 'helloworld-tmp', 'ntsuiboot'])
 
         //note: attrs['instanceTypes'] is sorted by price - cheapest to most expensive
-        attrs['instanceTypes'][0].getMonthlyLinuxOnDemandPrice() == '$14.40'
-        ['t1.micro', 'm1.small', 'm3.medium', 'm1.medium', 'c1.medium', 'm3.large', 'm1.large', 'm2.xlarge',
-                'm3.xlarge', 'm1.xlarge', 'c1.xlarge', 'm2.2xlarge', 'i2.xlarge', 'm3.2xlarge', 'm2.4xlarge',
-                'i2.2xlarge', 'cg1.4xlarge', 'cc2.8xlarge', 'hi1.4xlarge', 'i2.4xlarge', 'cr1.8xlarge', 'hs1.8xlarge',
-                'i2.8xlarge', 'huge.mainframe', 'c3.2xlarge', 'c3.4xlarge', 'c3.8xlarge', 'c3.large', 'c3.xlarge',
-                'cc1.4xlarge', 'g2.2xlarge'
+        attrs['instanceTypes'][0].getMonthlyLinuxOnDemandPrice() == '$9.36'
+        [
+            't2.micro',
+            't1.micro',
+            't2.small',
+            'm1.small',
+            't2.medium',
+            'm3.medium',
+            'c3.large',
+            'm3.large',
+            'r3.large',
+            'c3.xlarge',
+            'm3.xlarge',
+            'r3.xlarge',
+            'c3.2xlarge',
+            'm3.2xlarge',
+            'r3.2xlarge',
+            'c3.4xlarge',
+            'i2.xlarge',
+            'r3.4xlarge',
+            'c3.8xlarge',
+            'i2.2xlarge',
+            'r3.8xlarge',
+            'i2.4xlarge',
+            'hs1.8xlarge',
+            'i2.8xlarge',
+            'huge.mainframe',
+            'c1.medium',
+            'c1.xlarge',
+            'cc1.4xlarge',
+            'cc2.8xlarge',
+            'cg1.4xlarge',
+            'cr1.8xlarge',
+            'g2.2xlarge',
+            'hi1.4xlarge',
+            'm1.large',
+            'm1.medium',
+            'm1.xlarge',
+            'm2.2xlarge',
+            'm2.4xlarge',
+            'm2.xlarge'
         ] == attrs['instanceTypes']*.name
     }
 
@@ -370,7 +408,7 @@ class AutoScalingControllerSpec extends Specification {
             ebsOptimized = ebsOptimizedParam
         }
         LaunchConfiguration expectedLaunchConfiguration = new LaunchConfiguration().
-                withEbsOptimized(ebsOptimizedValue)
+                withEbsOptimized(ebsOptimizedValue).withInstanceMonitoring(new InstanceMonitoring().withEnabled(false))
 
         when:
         controller.save(cmd)
@@ -386,5 +424,18 @@ class AutoScalingControllerSpec extends Specification {
         ''                  | false
         'true'              | true
         'false'             | false
+    }
+
+    void 'should generate group name and environment variables from ASG form inputs'() {
+        request.format = 'json'
+        params.appName = 'hello-c0latam'
+        configService.userDataVarPrefix >> 'CLOUD_'
+
+        when:
+        controller.generateName()
+
+        then:
+        new ObjectMapper().readValue(response.contentAsString, Map) ==
+                [groupName: 'hello-c0latam', envVars: ['CLOUD_COUNTRIES=latam']]
     }
 }

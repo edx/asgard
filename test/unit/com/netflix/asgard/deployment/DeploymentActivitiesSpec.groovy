@@ -24,6 +24,7 @@ import com.netflix.asgard.AwsEc2Service
 import com.netflix.asgard.AwsLoadBalancerService
 import com.netflix.asgard.AwsSimpleWorkflowService
 import com.netflix.asgard.ConfigService
+import com.netflix.asgard.DeploymentService
 import com.netflix.asgard.DiscoveryService
 import com.netflix.asgard.EmailerService
 import com.netflix.asgard.LaunchTemplateService
@@ -59,13 +60,14 @@ class DeploymentActivitiesSpec extends Specification {
     LinkGenerator mockLinkGenerator = Mock(LinkGenerator)
     AwsSimpleWorkflowService mockAwsSimpleWorkflowService = Mock(AwsSimpleWorkflowService)
     PluginService mockPluginService = Mock(PluginService)
+    DeploymentService mockDeploymentService = Mock(DeploymentService)
     DeploymentActivities deploymentActivities = new DeploymentActivitiesImpl(
             awsAutoScalingService: mockAwsAutoScalingService, awsEc2Service: mockAwsEc2Service,
             launchTemplateService: mockLaunchTemplateService, configService: mockConfigService,
             discoveryService: mockDiscoveryService, awsLoadBalancerService: mockAwsLoadBalancerService,
             emailerService: mockEmailerService, activity: mockActivityOperations,
             grailsLinkGenerator: mockLinkGenerator, awsSimpleWorkflowService: mockAwsSimpleWorkflowService,
-            pluginService: mockPluginService)
+            pluginService: mockPluginService, deploymentService: mockDeploymentService)
 
     AsgDeploymentNames asgDeploymentNames = new AsgDeploymentNames(
             previousAsgName: 'rearden_metal_pourer-v001',
@@ -272,8 +274,8 @@ class DeploymentActivitiesSpec extends Specification {
 
     def 'should ask if deployment should proceed'() {
         when:
-        deploymentActivities.askIfDeploymentShouldProceed('hrearden@reardenmetal.com', 'rearden_metal_pourer-v001',
-                'It has finished pouring.')
+        deploymentActivities.askIfDeploymentShouldProceed(UserContext.auto(), 'hrearden@reardenmetal.com',
+                'rearden_metal_pourer-v001', 'It has finished pouring.')
 
         then:
         with(mockActivityOperations) {
@@ -303,13 +305,16 @@ class DeploymentActivitiesSpec extends Specification {
                 getTags() >> new SwfWorkflowTags(id: 1)
             }
         }
+        with(mockDeploymentService) {
+            1 * setManualTokenForDeployment('1', '8badf00d')
+        }
         0 * _
     }
 
     def 'should send notification'() {
         when:
-        deploymentActivities.sendNotification('hrearden@reardenmetal.com', 'rearden_metal_pourer-v001',
-                'Read this Hank!', 'Production has halted.')
+        deploymentActivities.sendNotification(UserContext.auto(), 'hrearden@reardenmetal.com',
+                'rearden_metal_pourer-v001', 'Read this Hank!', 'Production has halted.')
 
         then:
         with(mockActivityOperations) {

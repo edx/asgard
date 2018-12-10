@@ -88,7 +88,6 @@ import com.google.common.collect.HashMultiset
 import com.google.common.collect.Lists
 import com.google.common.collect.Multiset
 import com.netflix.asgard.cache.CacheInitializer
-import com.netflix.asgard.model.AutoScalingGroupData
 import com.netflix.asgard.model.SecurityGroupOption
 import com.netflix.asgard.model.Subnets
 import com.netflix.asgard.model.ZoneAvailability
@@ -981,7 +980,9 @@ class AwsEc2Service implements CacheInitializer, InitializingBean {
      *          are no reservations in any zones for the specified instance type
      */
     List<ZoneAvailability> getZoneAvailabilities(UserContext userContext, String instanceType) {
-        Collection<ReservedInstances> reservedInstanceGroups = getReservedInstances(userContext)
+        Collection<ReservedInstances> reservedInstanceGroups =
+                filterReservedInstancesByOffering(getReservedInstances(userContext),
+                        configService.getReservationOfferingTypeFilters())
         Map<String, Integer> zonesToActiveReservationCounts = [:]
         for (ReservedInstances reservedInstanceGroup in reservedInstanceGroups) {
             if (reservedInstanceGroup.state == 'active' && reservedInstanceGroup.instanceType == instanceType) {
@@ -1006,6 +1007,17 @@ class AwsEc2Service implements CacheInitializer, InitializingBean {
             new ZoneAvailability(zoneName: zone, totalReservations: reservationCount, usedReservations: instanceCount)
         }
         zoneAvailabilities.any { it.totalReservations } ? zoneAvailabilities : []
+    }
+
+    /**
+     * @param instances Collection of ReservedInstances
+     * @param filters as List of Strings
+     * @return Collection of ReservedInstances that are filtered by @param filters
+     */
+    Collection<ReservedInstances> filterReservedInstancesByOffering(Collection<ReservedInstances> instances,
+                                                                    List<String> filters){
+        instances.removeAll { it.offeringType in filters }
+        instances
     }
 
     Collection<ReservedInstances> getReservedInstances(UserContext userContext) {
@@ -1156,7 +1168,7 @@ class AwsEc2Service implements CacheInitializer, InitializingBean {
      * @return preselected zone names
      */
     Collection<String> preselectedZoneNames(Collection<AvailabilityZone> availabilityZones,
-            Collection<String> selectedZoneNames, AutoScalingGroupData group = null) {
+            Collection<String> selectedZoneNames, def group = null) {
         Collection<AvailabilityZone> preselectedAvailabilityZones = availabilityZones.findAll {
             it.shouldBePreselected(selectedZoneNames, group)
         }

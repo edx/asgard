@@ -18,6 +18,7 @@ package com.netflix.asgard
 import com.amazonaws.AmazonServiceException
 import com.amazonaws.services.autoscaling.model.Activity
 import com.amazonaws.services.autoscaling.model.AutoScalingGroup
+import com.amazonaws.services.autoscaling.model.InstanceMonitoring
 import com.amazonaws.services.autoscaling.model.LaunchConfiguration
 import com.amazonaws.services.autoscaling.model.ScalingPolicy
 import com.amazonaws.services.autoscaling.model.ScheduledUpdateGroupAction
@@ -38,6 +39,7 @@ import com.netflix.asgard.model.GroupedInstance
 import com.netflix.asgard.model.InstancePriceType
 import com.netflix.asgard.model.SubnetTarget
 import com.netflix.asgard.model.Subnets
+import com.netflix.frigga.Names
 import com.netflix.grails.contextParam.ContextParam
 import grails.converters.JSON
 import grails.converters.XML
@@ -342,10 +344,13 @@ class AutoScalingController {
             String ramdiskId = params.ramdiskId ?: null
             String iamInstanceProfile = params.iamInstanceProfile ?: configService.defaultIamRole
             boolean ebsOptimized = params.ebsOptimized?.toBoolean()
+            boolean enableMonitoring = params.enableInstanceMonitoring ? params.enableInstanceMonitoring.toBoolean() :
+                    configService.enableInstanceMonitoring
             LaunchConfiguration launchConfigTemplate = new LaunchConfiguration().withImageId(imageId).
                     withKernelId(kernelId).withInstanceType(instType).withKeyName(keyName).withRamdiskId(ramdiskId).
                     withSecurityGroups(securityGroups).withIamInstanceProfile(iamInstanceProfile).
-                    withEbsOptimized(ebsOptimized)
+                    withEbsOptimized(ebsOptimized).withInstanceMonitoring(new InstanceMonitoring()
+                        .withEnabled(enableMonitoring))
             if (params.pricing == InstancePriceType.SPOT.name()) {
                 launchConfigTemplate.spotPrice = spotInstanceRequestService.recommendSpotPrice(userContext, instType)
             }
@@ -484,13 +489,13 @@ class AutoScalingController {
     }
 
     def generateName() {
-        withFormat {
+        request.withFormat {
             json {
                 if (params.appName) {
                     try {
                         String groupName = Relationships.buildGroupName(params, true)
-                        List<String> envVars = Relationships.labeledEnvironmentVariables(groupName,
-                                configService.userDataVarPrefix)
+                        List<String> envVars = Relationships.labeledEnvVarsMap(Names.parseName(groupName),
+                                configService.userDataVarPrefix).collect { k, v -> "${k}=${v}" }
                         Map result = [groupName: groupName, envVars: envVars]
                         render(result as JSON)
                     } catch (Exception e) {

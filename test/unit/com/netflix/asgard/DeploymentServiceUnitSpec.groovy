@@ -15,6 +15,8 @@
  */
 package com.netflix.asgard
 
+import com.amazonaws.services.simpledb.model.Attribute
+import com.amazonaws.services.simpledb.model.Item
 import com.amazonaws.services.simpleworkflow.flow.StartWorkflowOptions
 import com.amazonaws.services.simpleworkflow.flow.WorkflowClientExternal
 import com.amazonaws.services.simpleworkflow.flow.generic.GenericWorkflowClientExternal
@@ -39,7 +41,7 @@ class DeploymentServiceUnitSpec extends Specification {
     AwsSimpleWorkflowService awsSimpleWorkflowService = Mock(AwsSimpleWorkflowService)
     FlowService flowService = Mock(FlowService)
     DeploymentService deploymentService = new DeploymentService(awsSimpleWorkflowService: awsSimpleWorkflowService,
-            flowService: flowService)
+            flowService: flowService, awsSimpleDbService: Mock(AwsSimpleDbService))
 
     Closure<WorkflowExecutionInfo> newWorkflowExecutionInfo = { int sequenceNumber ->
         new WorkflowExecutionInfo(tagList: new SwfWorkflowTags(id: sequenceNumber as String).constructTags(),
@@ -49,7 +51,7 @@ class DeploymentServiceUnitSpec extends Specification {
 
     Closure<Deployment> newDeployment = { int sequenceNumber ->
         new Deployment(sequenceNumber as String, null, null, null, null, null, new Date(sequenceNumber),
-                new Date(sequenceNumber), 'running', [])
+                new Date(sequenceNumber), 'running', [], [])
     }
 
     def setup() {
@@ -102,6 +104,10 @@ class DeploymentServiceUnitSpec extends Specification {
         and:
         1 * deploymentService.awsSimpleWorkflowService.getWorkflowExecutionInfoByTaskId('1') >>
                 new WorkflowExecutionBeanOptions(newWorkflowExecutionInfo(1))
+        1 * deploymentService.awsSimpleDbService.selectOne('ASGARD_SWF_TOKEN_FOR_DEPLOYMENT', '1') >> new Item(
+                name: '1', attributes: [new Attribute(name: 'token', value: '1')])
+        0 * _
+
     }
 
     void 'should not get deployment if it does not exist'() {
@@ -113,6 +119,7 @@ class DeploymentServiceUnitSpec extends Specification {
 
         and:
         3 * deploymentService.awsSimpleWorkflowService.getWorkflowExecutionInfoByTaskId('1')
+        0 * _
     }
 
     void 'should not get deployment without an id'() {
@@ -137,12 +144,12 @@ class DeploymentServiceUnitSpec extends Specification {
 
     def 'starting a deployment should make workflow client, call getter to update cache, and return task ID'() {
         UserContext userContext = UserContext.auto(Region.US_EAST_1)
-        DeploymentWorkflowOptions deployOpts = new DeploymentWorkflowOptions()
+        DeploymentWorkflowOptions deployOpts = new DeploymentWorkflowOptions(clusterName: 'Calysteral')
         LaunchConfigurationBeanOptions lcOpts = new LaunchConfigurationBeanOptions()
         AutoScalingGroupBeanOptions asgOpts = new AutoScalingGroupBeanOptions()
 
         when:
-        String taskId = deploymentService.startDeployment(userContext, 'Calysteral', deployOpts, lcOpts, asgOpts)
+        String taskId = deploymentService.startDeployment(userContext, deployOpts, lcOpts, asgOpts)
 
         then:
         taskId == '07700900461'
@@ -164,22 +171,22 @@ class DeploymentServiceUnitSpec extends Specification {
         Link link = Link.to(EntityType.cluster, 'helloworld-example')
 
         when:
-        Deployment deployment = deploymentService.getRunningDeploymentForCluster('helloworld-example')
+        Deployment deployment = deploymentService.getRunningDeploymentForCluster(Region.US_WEST_1, 'helloworld-example')
 
         then:
-        deployment == new Deployment('123', null, null, null, null, null, null, null, 'running', [])
-        1 * awsSimpleWorkflowService.getOpenWorkflowExecutionForObjectLink(link) >> new WorkflowExecutionInfo(
-                tagList: new SwfWorkflowTags(id: '123').constructTags())
+        deployment == new Deployment('123', null, null, null, null, null, null, null, 'running', [], [])
+        1 * awsSimpleWorkflowService.getOpenWorkflowExecutionForObjectLink(Region.US_WEST_1, link) >>
+                new WorkflowExecutionInfo(tagList: new SwfWorkflowTags(id: '123').constructTags())
     }
 
     def 'should indicate that a workflow execution is not in progress for the specified cluster'() {
         Link link = Link.to(EntityType.cluster, 'helloworld-example')
 
         when:
-        Deployment deployment = deploymentService.getRunningDeploymentForCluster('helloworld-example')
+        Deployment deployment = deploymentService.getRunningDeploymentForCluster(Region.US_WEST_1, 'helloworld-example')
 
         then:
         deployment == null
-        1 * awsSimpleWorkflowService.getOpenWorkflowExecutionForObjectLink(link) >> null
+        1 * awsSimpleWorkflowService.getOpenWorkflowExecutionForObjectLink(Region.US_WEST_1, link) >> null
     }
 }

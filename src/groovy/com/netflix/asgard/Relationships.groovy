@@ -15,7 +15,6 @@
  */
 package com.netflix.asgard
 
-import com.netflix.asgard.model.AutoScalingGroupData
 import com.netflix.frigga.NameValidation
 import com.netflix.frigga.Names
 import com.netflix.frigga.ami.AppVersion
@@ -44,31 +43,8 @@ class Relationships {
      */
     static final Integer GROUP_NAME_MAX_LENGTH = 96
 
-    /** The maximum number of auto scaling groups allowed in a cluster spanning multiple push sequence numbers. */
-    static final Integer CLUSTER_MAX_GROUPS = 3
-
     /** The maximum sequence number for an auto scaling group in a sequenced cluster before rolling over to 0. */
     static final Integer CLUSTER_MAX_SEQUENCE_NUMBER = 999
-
-    static final Comparator<AutoScalingGroupData> PUSH_SEQUENCE_COMPARATOR = new Comparator<AutoScalingGroupData>() {
-        int compare(AutoScalingGroupData a, AutoScalingGroupData b) {
-            Names aNames = dissectCompoundName(a.autoScalingGroupName)
-            Names bNames = dissectCompoundName(b.autoScalingGroupName)
-            Check.equal(aNames.cluster, bNames.cluster)
-            Integer aSequence = aNames.sequence
-            Integer bSequence = bNames.sequence
-
-            // The group with no push sequence number goes first
-            if (aSequence == null) { return -1 }
-            if (bSequence == null) { return 1 }
-
-            // If a and b are very far apart then greater number goes first, to achieve 997, 998, 999, 000, 001, 002
-            if (Math.abs(aSequence - bSequence) > CLUSTER_MAX_SEQUENCE_NUMBER - CLUSTER_MAX_GROUPS * 2) {
-                return bSequence - aSequence
-            }
-            aSequence - bSequence
-        }
-    }
 
     static String appNameFromLoadBalancerName(String loadBalancerName) {
         dissectCompoundName(loadBalancerName).app ?: ''
@@ -174,7 +150,7 @@ class Relationships {
      * @return true if the detail is valid
      */
     static Boolean checkDetail(String detail) {
-        NameValidation.checkDetail(detail)
+        NameValidation.checkNameWithHyphen(detail)
     }
 
     static String buildLaunchConfigurationName(String autoScalingGroupName) {
@@ -259,16 +235,29 @@ class Relationships {
         labeledEnvironmentVariables(dissectCompoundName(asgName), prefix)
     }
 
-    static List<String> labeledEnvironmentVariables(Names names, String prefix) {
+    /**
+     * Gets the environment variables as a map of name value pairs, gathered from the fields in a Names object derived
+     * from an Auto Scaling Group name. The fields are the ones that are meant as special labels for specific dimensions
+     * of difference between ASGs.
+     *
+     * @param names the container of special label fields
+     * @param prefix the namespace string that should be appended to each label key to create a full environment
+     *      variable key
+     * @return a map of environment variable keys to values
+     */
+    static Map<String, String> labeledEnvVarsMap(Names names, String prefix) {
         Check.notNull(prefix, String, 'prefix')
-        List<String> envVars = []
-
-        LABELED_ENV_VAR_FIELDS.each { String field ->
+        Map<String, String> props = [:]
+        for (String field in LABELED_ENV_VAR_FIELDS) {
             if (names[field]) {
-                envVars << "export ${prefix}${Meta.splitCamelCase(field, "_").toUpperCase()}=${names[field]}"
+                props["${prefix}${Meta.splitCamelCase(field, "_").toUpperCase()}"] = names[field]
             }
         }
-        envVars
+        props
+    }
+
+    static List<String> labeledEnvironmentVariables(Names names, String prefix) {
+        labeledEnvVarsMap(names, prefix).collect { k, v -> "export ${k}=${v}" }.toList()
     }
 
     private static PARTS_FIELDS = (LABELED_ENV_VAR_FIELDS + ['stack', 'detail']).sort()

@@ -172,13 +172,12 @@ class TaskService {
         if (completed.size() > numberOfCompletedTasksToRetain) {
             completed.poll()
         }
-        if (task.email) {
-            emailerService.sendUserEmail(task.email, task.summary, task.logAsString)
-        }
         for (TaskFinishedListener taskFinishedListener in pluginService?.taskFinishedListeners) {
             try {
                 taskFinishedListener.taskFinished(task)
             } catch (Exception e) {
+                String className = taskFinishedListener.getClass().simpleName
+                log.error "Task finished listener ${className} failed for task ${task.id} ${task.summary}", e
                 emailerService.sendExceptionEmail("Task finished plugin error: $e", e)
             }
         }
@@ -207,6 +206,22 @@ class TaskService {
     }
 
     /**
+     * @return a single concatenated list of all locally cached running tasks (without tasks on other Asgard servers)
+     */
+    List<Task> getAllRunningInCache() {
+        localRunningInMemory
+    }
+
+    /**
+     * @return a list of all running tasks from the AWS Simple Workflow Service
+     */
+    List<Task> getAllRunningInSwf() {
+        awsSimpleWorkflowService.openWorkflowExecutions.collect {
+            new WorkflowExecutionBeanOptions(it).asTask()
+        }
+    }
+
+    /**
      * @return a single concatenated list of all in-memory running tasks from the local and all the remote servers
      */
     List<Task> getAllRunningInMemory() {
@@ -214,12 +229,10 @@ class TaskService {
     }
 
     /**
-     * @return all running tasks including local and remote in-memory tasks, and SWF workflow executions
+     * @return all running tasks including local and remote in-memory tasks, and cached SWF workflow executions
      */
     Collection<Task> getAllRunning() {
-        allRunningInMemory + awsSimpleWorkflowService.openWorkflowExecutions.collect {
-            new WorkflowExecutionBeanOptions(it).asTask()
-        }
+        allRunningInMemory + allRunningInSwf
     }
 
     /**
@@ -298,13 +311,12 @@ class TaskService {
 
     Collection<Task> getRunningTasksByObject(Link link, Region region) {
         Closure matcher = { it.objectType == link.type && it.objectId == link.id && it.userContext.region == region }
-
-        // This is incomplete because it should include SWF tasks, as well as tasks running on other Asgard instances.
+        // This is incomplete because it should include tasks running on other Asgard instances.
         // The cluster screen uses this, so changing it to call remote Asgard instances would impact performance of the
-        // cluster screen. Calling SWF would probably still be a good idea here. To solve the performance problem of
-        // the remote Asgard instances, either cache the running tasks of remote Asgards, or refactor all long-running
-        // tasks into SWF workflows so the need to call remote Asgards for in-memory task lists goes away.
-        running.findAll(matcher).sort { it.startTime }
+        // cluster screen. To solve the performance problem of the remote Asgard instances, either cache the running
+        // tasks of remote Asgards, or refactor all long-running tasks into SWF workflows so the need to call remote
+        // Asgards for in-memory task lists goes away.
+        allRunningInCache.findAll(matcher).sort { it.startTime }
     }
 
     /**

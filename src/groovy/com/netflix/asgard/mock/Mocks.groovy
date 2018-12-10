@@ -35,7 +35,7 @@ import com.netflix.asgard.AwsSqsService
 import com.netflix.asgard.CachedMapBuilder
 import com.netflix.asgard.Caches
 import com.netflix.asgard.ConfigService
-import com.netflix.asgard.DefaultUserDataProvider
+import com.netflix.asgard.userdata.DefaultUserDataProvider
 import com.netflix.asgard.DiscoveryService
 import com.netflix.asgard.DnsService
 import com.netflix.asgard.EmailerService
@@ -138,7 +138,6 @@ class Mocks {
                                     awsAccounts: [TEST_AWS_ACCOUNT_ID, PROD_AWS_ACCOUNT_ID]
                             ],
                             promote: [
-                                    targetServer: 'http://prod',
                                     imageTags: true,
                                     canonicalServerForBakeEnvironment: 'http://test'
                             ],
@@ -179,7 +178,7 @@ class Mocks {
             applicationService.grailsApplication = grailsApplication()
             applicationService.configService = configService()
             applicationService.awsClientService = awsClientService()
-            applicationService.simpleDbClient = applicationService.awsClientService.createImpl(MockAmazonSimpleDBClient)
+            applicationService.awsSimpleDbService = awsSimpleDbService()
 
             List<String> names =
                     ['abcache', 'api', 'aws_stats', 'cryptex', 'helloworld', 'ntsuiboot', 'videometadata'].asImmutable()

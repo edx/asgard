@@ -18,13 +18,16 @@ package com.netflix.asgard.model
 import com.amazonaws.services.simpleworkflow.model.WorkflowExecution
 import com.netflix.asgard.Region
 import com.netflix.asgard.Time
+import com.netflix.asgard.deployment.steps.DeploymentStep
 import groovy.transform.Canonical
+import java.util.regex.Matcher
+import java.util.regex.Pattern
 import org.joda.time.DateTime
 
 /**
  * Attributes that describe a deployment workflow execution.
  */
-@Canonical
+@Canonical(excludes='token')
 class Deployment {
     final String id
     final String clusterName
@@ -36,6 +39,27 @@ class Deployment {
     final Date updateTime
     final String status
     final List<String> log
+    final List<DeploymentStep> steps
+
+    static Pattern stepPattern = ~/.*\{"step":([0-9]+)\}/
+
+    /** Construct JSON that represents a step index */
+    static constructStepJson(int stepIndex) {
+        """{"step":${stepIndex}}"""
+    }
+
+    /** @return step index from JSON */
+    static Integer parseStepIndex(String logMessage) {
+        Matcher matcher = logMessage =~ stepPattern
+        if (matcher.matches()) {
+            String stepIndex = matcher[0][1]
+            return Integer.parseInt(stepIndex)
+        }
+        null
+    }
+
+    /** AWS Simple Workflow Service activity token needed to complete a manual activity */
+    String token
 
     /**
      * @return indication that workflow is done running
@@ -50,5 +74,25 @@ class Deployment {
     String getDurationString() {
         DateTime endTime = isDone() ? new DateTime(updateTime) : Time.now()
         Time.format(new DateTime(startTime), endTime)
+    }
+
+    String getRegionCode() {
+        region.code
+    }
+
+    /** @return list of lists of log messages grouped by step */
+    List<List<String>> getLogForSteps() {
+        List<List<String>> logForSteps = [[]]
+        int currentStepIndex = 0
+        log.each {
+            Integer stepIndex = parseStepIndex(it)
+            if (stepIndex != null) {
+                currentStepIndex = stepIndex
+                logForSteps[currentStepIndex] = []
+            } else {
+                logForSteps[currentStepIndex] << it
+            }
+        }
+        logForSteps
     }
 }

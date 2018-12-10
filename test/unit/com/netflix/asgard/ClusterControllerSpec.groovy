@@ -30,6 +30,7 @@ import com.netflix.asgard.push.GroupCreateOperation
 import com.netflix.asgard.push.GroupCreateOptions
 import grails.test.mixin.TestFor
 import spock.lang.Specification
+import spock.lang.Unroll
 
 @SuppressWarnings(["GroovyAssignabilityCheck"])
 @TestFor(ClusterController)
@@ -74,6 +75,8 @@ class ClusterControllerSpec extends Specification {
             awsLoadBalancerService = Mock(AwsLoadBalancerService)
             awsLoadBalancerService.getLoadBalancers(_) >> []
             configService = Mock(ConfigService)
+            configService.clusterMaxGroups >> 3
+            deploymentService = Mock(DeploymentService)
         }
     }
 
@@ -104,8 +107,10 @@ class ClusterControllerSpec extends Specification {
         controller.awsAutoScalingService.getCluster(_, 'helloworld-example') >> {
             new Cluster([
                     AutoScalingGroupData.from(new AutoScalingGroup(autoScalingGroupName: 'helloworld-example-v014',
+                            createdTime: new Date(1398890600000),
                             instances: [new Instance(instanceId: 'i-8ee4eeee')]), [:], [], [:], []),
                     AutoScalingGroupData.from(new AutoScalingGroup(autoScalingGroupName: 'helloworld-example-v015',
+                            createdTime: new Date(1398890700000),
                             instances: [new Instance(instanceId: 'i-6ef9f30e'),
                                     new Instance(instanceId: 'i-95fe1df6')]), [:], [], [:], [])
             ])
@@ -215,6 +220,23 @@ class ClusterControllerSpec extends Specification {
                 it
             }
         }
+    }
+
+    @Unroll
+    def 'integer conversion should allow any valid integer'(String toConvert, Integer defaultValue, Integer expected) {
+        expect:
+        controller.convertToIntOrUseDefault(toConvert, defaultValue) == expected
+
+        where:
+        toConvert | defaultValue | expected
+        "nonInt"  | 100          | 100
+        "1"       | 100          | 1
+        "0"       | 100          | 0
+        "-1"      | 100          | -1
+        null      | 100          | 100
+        ""        | 100          | 100
+        " "       | 100          | 100
+        " 123 "   | 100          | 123
     }
 
     def 'next group should have selections over defaults'() {

@@ -19,18 +19,22 @@ import com.google.common.base.CaseFormat
 import com.netflix.asgard.CachedMapBuilder
 import com.netflix.asgard.Caches
 import com.netflix.asgard.CsiAsgAnalyzer
-import com.netflix.asgard.DefaultAdvancedUserDataProvider
-import com.netflix.asgard.DefaultUserDataProvider
-import com.netflix.asgard.NetflixAdvancedUserDataProvider
+import com.netflix.asgard.userdata.DefaultAdvancedUserDataProvider
+import com.netflix.asgard.userdata.DefaultUserDataProvider
+import com.netflix.asgard.userdata.NetflixAdvancedUserDataProvider
 import com.netflix.asgard.NoOpAsgAnalyzer
 import com.netflix.asgard.Region
 import com.netflix.asgard.ServiceInitLoggingBeanPostProcessor
 import com.netflix.asgard.SnsTaskFinishedListener
 import com.netflix.asgard.ThreadScheduler
 import com.netflix.asgard.auth.OneLoginAuthenticationProvider
+import com.netflix.asgard.auth.RestrictBrowserAuthorizationProvider
 import com.netflix.asgard.auth.RestrictEditAuthorizationProvider
 import com.netflix.asgard.deployment.DeploymentActivitiesImpl
+import com.netflix.asgard.eureka.EurekaClientHolder
 import com.netflix.asgard.model.CsiScheduledAnalysisFactory
+import com.netflix.asgard.server.DeprecatedServerNames
+import com.netflix.asgard.userdata.PropertiesUserDataProvider
 import groovy.io.FileType
 
 beans = {
@@ -43,7 +47,19 @@ beans = {
 
     caches(Caches, ref('cachedMapBuilder'), ref('configService'))
 
+    deprecatedServerNames(DeprecatedServerNames) {
+        it.autowire = "byName"
+    }
+
+    eurekaClientHolder(EurekaClientHolder) {
+        it.autowire = "byName"
+    }
+
     objectMapper(ObjectMapper)
+
+    propertiesUserDataProvider(PropertiesUserDataProvider) { bean ->
+        bean.lazyInit = true
+    }
 
     defaultUserDataProvider(DefaultUserDataProvider) { bean ->
         bean.lazyInit = true
@@ -87,6 +103,8 @@ beans = {
     restrictEditAuthorizationProvider(RestrictEditAuthorizationProvider) { bean ->
         bean.lazyInit = true
     }
+
+    restrictBrowserAuthorizationProvider(RestrictBrowserAuthorizationProvider)
 
     //**** Plugin behavior
 
